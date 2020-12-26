@@ -1,6 +1,7 @@
-{   Public include file for the FLINE library.  This library manages lines from
-*   files or separate collections of line kept in memory where they can be
-*   accessed without any explicit I/O operations.
+{   Public include file for the FLINE library.  This library manages named
+*   collections of text lines.  These can be contents of files, but can also be
+*   from other sources.  All data is kept in memory where applications can
+*   reference it with pointers.
 }
 const
   fline_subsys_k = -73;                {FLINE library subsystem ID}
@@ -8,62 +9,55 @@ const
 type
   fline_line_p_t = ^fline_line_t;
 
-  fline_lcoll_k_t = (                  {ID for types of collections of text lines}
-    fline_lcoll_file_k,                {copy of a file}
-    fline_lcoll_lmem_k);               {local collection of lines only in memory}
+  fline_coll_k_t = (                   {ID for type of collections of text lines}
+    fline_coll_file_k,                 {copy of a file}
+    fline_coll_lmem_k);                {local collection of lines only in memory}
 
-  fline_file_p_t = ^fline_file_t;
-  fline_file_t = record                {info about one "file" or collections of lines}
-    lcoll: fline_lcoll_k_t;            {type of this collection of lines}
+  fline_coll_p_t = ^fline_coll_t;
+  fline_coll_t = record                {info about one collection of lines}
+    coll: fline_coll_k_t;              {type of this collection}
     first_p: fline_line_p_t;           {pointer to first line}
     last_p: fline_line_p_t;            {pointer to last line}
-    case fline_lcoll_k_t of            {what kind of collection is this ?}
-fline_lcoll_file_k: (                  {copy of file system file}
+    case fline_coll_k_t of             {what kind of collection is this ?}
+fline_coll_file_k: (                   {copy of file system file}
       file_tnam_p: string_var_p_t;     {full file treename}
       );
-fline_lcoll_lmem_k: (                  {named collection in memory}
+fline_coll_lmem_k: (                   {named collection in memory}
       lmem_name_p: string_var_p_t;     {name of this snippet}
       );
     end;
 
   fline_flist_ent_p_t = ^fline_flist_ent_t;
-  fline_flist_ent_t = record           {files list entry}
-    next_p: fline_flist_ent_p_t;       {pointer to next file in list}
-    file_p: fline_file_p_t;            {pointer to file for this list entry}
+  fline_flist_ent_t = record           {collections list entry}
+    next_p: fline_flist_ent_p_t;       {pointer to next list entry}
+    coll_p: fline_coll_p_t;            {pointer to collection for this list entry}
     end;
 
-  fline_line_t = record                {info about one input file line}
-    next_p: fline_line_p_t;            {pointer to next input line this file, NIL = last}
-    file_p: fline_file_p_t;            {pointer to file this line is from}
+  fline_line_t = record                {one line in a collection}
+    next_p: fline_line_p_t;            {points to next line in this collection}
+    coll_p: fline_coll_p_t;            {points to collection this line is in}
     lnum: sys_int_machine_t;           {1-N line number of this line}
     str_p: string_var_p_t;             {pointer to string for this line}
     end;
 
   fline_pos_p_t = ^fline_pos_t;
-  fline_pos_t = record                 {info about one character position}
+  fline_pos_t = record                 {character position within line}
     line_p: fline_line_p_t;            {line containing the character}
-    ind: sys_int_machine_t;            {1-N index into line, 0 before}
-    end;
-
-  fline_crange_p_t = ^fline_crange_t;
-  fline_crange_t = record              {character range within a file}
-    first: fline_pos_t;                {first character of the range}
-    last: fline_pos_t;                 {last character of the range}
+    ind: sys_int_machine_t;            {1-N char index, 0 before, len+1 after}
     end;
 
   fline_hpos_p_t = ^fline_hpos_t;
-  fline_hpos_t = record                {position within hierarchy of files}
+  fline_hpos_t = record                {position within hierarchy of collections}
+    prev_p: fline_hpos_p_t;            {points to position within parent collection}
     level: sys_int_machine_t;          {nesting level, 0 at top file}
-    file_p: fline_file_p_t;            {pointer to the current file}
-    pos: fline_pos_t;                  {current position within this file}
-    prev_p: fline_hpos_p_t;            {pointer to position within parent file}
+    pos: fline_pos_t;                  {position within the current file}
     end;
 
   fline_p_t = ^fline_t;
   fline_t = record                     {state for one use of this library}
     mem_p: util_mem_context_p_t;       {points to context for dynamic memory}
-    file_first_p: fline_flist_ent_p_t; {points to first files list entry}
-    file_last_p: fline_flist_ent_p_t;  {points to last files list entry}
+    coll_first_p: fline_flist_ent_p_t; {points to start of collections list}
+    coll_last_p: fline_flist_ent_p_t;  {points to end of collections list}
     end;
 {
 *   Functions and subroutines.

@@ -43,8 +43,8 @@ begin
     then return;
 
   fline_p^.mem_p := mem_p;             {save pointer to mem context for this lib use}
-  fline_p^.file_first_p := nil;
-  fline_p^.file_last_p := nil;
+  fline_p^.coll_first_p := nil;
+  fline_p^.coll_last_p := nil;
   end;
 {
 ********************************************************************************
