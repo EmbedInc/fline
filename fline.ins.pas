@@ -9,20 +9,20 @@ const
 type
   fline_line_p_t = ^fline_line_t;
 
-  fline_coll_k_t = (                   {ID for type of collections of text lines}
-    fline_coll_file_k,                 {copy of a file}
-    fline_coll_lmem_k);                {local collection of lines only in memory}
+  fline_colltyp_k_t = (                {ID for type of collections of text lines}
+    fline_colltyp_file_k,              {copy of a file}
+    fline_colltyp_lmem_k);             {local collection of lines only in memory}
 
   fline_coll_p_t = ^fline_coll_t;
   fline_coll_t = record                {info about one collection of lines}
-    coll: fline_coll_k_t;              {type of this collection}
+    colltyp: fline_colltyp_k_t;        {type of this collection}
     first_p: fline_line_p_t;           {pointer to first line}
     last_p: fline_line_p_t;            {pointer to last line}
-    case fline_coll_k_t of             {what kind of collection is this ?}
-fline_coll_file_k: (                   {copy of file system file}
+    case fline_colltyp_k_t of          {what kind of collection is this ?}
+fline_colltyp_file_k: (                {copy of file system file}
       file_tnam_p: string_var_p_t;     {full file treename}
       );
-fline_coll_lmem_k: (                   {named collection in memory}
+fline_colltyp_lmem_k: (                {named collection in memory}
       lmem_name_p: string_var_p_t;     {name of this snippet}
       );
     end;
@@ -70,4 +70,34 @@ procedure fline_new (                  {create new use of the FLINE library}
   in out  mem: util_mem_context_t;     {parent mem context, will create subordinate}
   out     fline_p: fline_p_t;          {returned pointer to new library use state}
   out     stat: sys_err_t);            {completion status}
+  val_param; extern;
+
+procedure fline_coll_find_file (       {find existing FILE collection}
+  in out  fl: fline_t;                 {FLINE library use state}
+  in      tnam: string_var_arg_t;      {full file absolute treename}
+  out     coll_p: fline_coll_p_t);     {pointer to collection, NIL not found}
+  val_param; extern;
+
+procedure fline_coll_find_lmem (       {find existing LMEM collection}
+  in out  fl: fline_t;                 {FLINE library use state}
+  in      name: string_var_arg_t;      {collection name}
+  out     coll_p: fline_coll_p_t);     {pointer to collection, NIL not found}
+  val_param; extern;
+
+procedure fline_coll_new (             {create new empty collection}
+  in out  fl: fline_t;                 {FLINE library use state}
+  in      colltyp: fline_colltyp_k_t;  {type of the new collection}
+  out     coll_p: fline_coll_p_t);     {pointer to new coll, type-specific not filled in}
+  val_param; extern;
+
+procedure fline_coll_new_file (        {create new empty collection, type FILE}
+  in out  fl: fline_t;                 {FLINE library use state}
+  in      tnam: string_var_arg_t;      {absolute file treename}
+  out     coll_p: fline_coll_p_t);     {returned pointer to the new collection}
+  val_param; extern;
+
+procedure fline_coll_new_lmem (        {create new empty collection, type LMEM}
+  in out  fl: fline_t;                 {FLINE library use state}
+  in      name: string_var_arg_t;      {collection name}
+  out     coll_p: fline_coll_p_t);     {returned pointer to the new collection}
   val_param; extern;
