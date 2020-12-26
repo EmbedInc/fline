@@ -102,6 +102,13 @@ procedure fline_coll_new_lmem (        {create new empty collection, type LMEM}
   out     coll_p: fline_coll_p_t);     {returned pointer to the new collection}
   val_param; extern;
 
+procedure fline_file_get (             {find or create contents of a text file}
+  in out  fl: fline_t;                 {FLINE library use state}
+  in      fnam: univ string_var_arg_t; {file name}
+  out     coll_p: fline_coll_p_t;      {returned pointer to the text lines collection}
+  out     stat: sys_err_t);            {completion status}
+  val_param; extern;
+
 procedure fline_line_add (             {add line to end of collection}
   in out  fl: fline_t;                 {FLINE library use state}
   in out  coll: fline_coll_t;          {the collection to add to}
