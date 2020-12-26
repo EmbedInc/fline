@@ -74,13 +74,13 @@ procedure fline_new (                  {create new use of the FLINE library}
 
 procedure fline_coll_find_file (       {find existing FILE collection}
   in out  fl: fline_t;                 {FLINE library use state}
-  in      tnam: string_var_arg_t;      {full file absolute treename}
+  in      tnam: univ string_var_arg_t; {full file absolute treename}
   out     coll_p: fline_coll_p_t);     {pointer to collection, NIL not found}
   val_param; extern;
 
 procedure fline_coll_find_lmem (       {find existing LMEM collection}
   in out  fl: fline_t;                 {FLINE library use state}
-  in      name: string_var_arg_t;      {collection name}
+  in      name: univ string_var_arg_t; {collection name}
   out     coll_p: fline_coll_p_t);     {pointer to collection, NIL not found}
   val_param; extern;
 
@@ -92,12 +92,18 @@ procedure fline_coll_new (             {create new empty collection}
 
 procedure fline_coll_new_file (        {create new empty collection, type FILE}
   in out  fl: fline_t;                 {FLINE library use state}
-  in      tnam: string_var_arg_t;      {absolute file treename}
+  in      tnam: univ string_var_arg_t; {absolute file treename}
   out     coll_p: fline_coll_p_t);     {returned pointer to the new collection}
   val_param; extern;
 
 procedure fline_coll_new_lmem (        {create new empty collection, type LMEM}
   in out  fl: fline_t;                 {FLINE library use state}
-  in      name: string_var_arg_t;      {collection name}
+  in      name: univ string_var_arg_t; {collection name}
   out     coll_p: fline_coll_p_t);     {returned pointer to the new collection}
+  val_param; extern;
+
+procedure fline_line_add (             {add line to end of collection}
+  in out  fl: fline_t;                 {FLINE library use state}
+  in out  coll: fline_coll_t;          {the collection to add to}
+  in      line: univ string_var_arg_t); {the text line to add}
   val_param; extern;
