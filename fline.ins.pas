@@ -52,9 +52,9 @@ fline_colltyp_lmem_k: (                {named collection in memory}
 
   fline_hier_p_t = ^fline_hier_t;
   fline_hier_t = record                {position within hierarchy of collections}
-    prev_p: fline_hier_p_t;            {points to position within parent collection}
+    prev_p: fline_hier_p_t;            {points to parent hierarchy level}
     level: sys_int_machine_t;          {nesting level, 0 at top file}
-    pos: fline_pos_t;                  {position within the current file}
+    pos: fline_pos_t;                  {position within the current collection}
     end;
 
   fline_t = record                     {state for one use of this library}
@@ -105,6 +105,31 @@ procedure fline_file_get (             {find or create contents of a text file}
   in out  fl: fline_t;                 {FLINE library use state}
   in      fnam: univ string_var_arg_t; {file name}
   out     coll_p: fline_coll_p_t;      {returned pointer to the text lines collection}
+  out     stat: sys_err_t);            {completion status}
+  val_param; extern;
+
+procedure fline_hier_create (          {create a new files hierarchy stack}
+  out     hier_p: fline_hier_p_t;      {returned pointer to top level of new hierarchy}
+  in var  coll: fline_coll_t);         {collection for top "file" of hierarchy}
+  val_param; extern;
+
+procedure fline_hier_delete (          {delete whole hierarchy}
+  in out  hier_p: fline_hier_p_t);     {delete this level and all parents, returned NIL}
+  val_param; extern;
+
+function fline_hier_pop (              {pop back to previous hier level, delete old}
+  in out  hier_p: fline_hier_p_t)      {pnt to curr level, will point to parent}
+  :boolean;                            {popped, not at top level}
+  val_param; extern;
+
+procedure fline_hier_push (            {new hierarchy level, connect to collection}
+  in out  hier_p: fline_hier_p_t;      {pnt to curr level, will point to child}
+  in var  coll: fline_coll_t);         {collection to read at the new level}
+  val_param; extern;
+
+procedure fline_hier_push_file (       {new hierarchy level, connect to coll of a file}
+  in out  hier_p: fline_hier_p_t;      {pnt to curr level, will point to child}
+  in      fnam: univ string_var_arg_t; {name of file to read at the new level}
   out     stat: sys_err_t);            {completion status}
   val_param; extern;
 

@@ -12,6 +12,7 @@ call src_insall %srcdir% %libname%
 call src_pas %srcdir% %libname%_char
 call src_pas %srcdir% %libname%_coll
 call src_pas %srcdir% %libname%_file
+call src_pas %srcdir% %libname%_hier
 call src_pas %srcdir% %libname%_lib
 call src_pas %srcdir% %libname%_line
 call src_pas %srcdir% %libname%_pos

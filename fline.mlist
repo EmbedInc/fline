@@ -1,6 +1,7 @@
 fline_char.obj
 fline_coll.obj
 fline_file.obj
+fline_hier.obj
 fline_lib.obj
 fline_line.obj
 fline_pos.obj
