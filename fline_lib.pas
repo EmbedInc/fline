@@ -1,13 +1,13 @@
 {   High level library management.
 }
 module fline_lib;
-define fline_new;
-define fline_end;
+define fline_lib_new;
+define fline_lib_end;
 %include 'fline2.ins.pas';
 {
 ********************************************************************************
 *
-*   Subroutine FLINE_NEW (MEM, FLINE_P, STAT)
+*   Subroutine FLINE_LIB_NEW (MEM, FLINE_P, STAT)
 *
 *   Start a new use of the FLINE library.  MEM is the parent memory context.  A
 *   subordinate context will be created for the exclusive use of the new FLINE
@@ -18,7 +18,7 @@ define fline_end;
 *
 *   On error, FLINE_P is returned NIL, and STAT indicates the error.
 }
-procedure fline_new (                  {create new use of the FLINE library}
+procedure fline_lib_new (              {create new use of the FLINE library}
   in out  mem: util_mem_context_t;     {parent mem context, will create subordinate}
   out     fline_p: fline_p_t;          {returned pointer to new library use state}
   out     stat: sys_err_t);            {completion status}
@@ -49,12 +49,12 @@ begin
 {
 ********************************************************************************
 *
-*   Subroutine FLINE_END (FLINE_P)
+*   Subroutine FLINE_LIB_END (FLINE_P)
 *
 *   End a use of the FLINE library.  FLINE_P must point to the FLINE library use
 *   state on entry.  It will be returned NIL.
 }
-procedure fline_end (                  {end a use of the FLINE library}
+procedure fline_lib_end (              {end a use of the FLINE library}
   in out  fline_p: fline_p_t);         {pointer to lib use state, returned NIL}
   val_param;
 

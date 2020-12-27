@@ -62,11 +62,11 @@ fline_colltyp_lmem_k: (                {named collection in memory}
 {
 *   Functions and subroutines.
 }
-procedure fline_end (                  {end a use of the FLINE library}
+procedure fline_lib_end (              {end a use of the FLINE library}
   in out  fline_p: fline_p_t);         {pointer to lib use state, returned NIL}
   val_param; extern;
 
-procedure fline_new (                  {create new use of the FLINE library}
+procedure fline_lib_new (              {create new use of the FLINE library}
   in out  mem: util_mem_context_t;     {parent mem context, will create subordinate}
   out     fline_p: fline_p_t;          {returned pointer to new library use state}
   out     stat: sys_err_t);            {completion status}
