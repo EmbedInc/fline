@@ -48,7 +48,7 @@ begin
     file_read_text (conn, buf, stat);  {try to read new line from file}
     if file_eof(stat) then exit;       {hit end of file ?}
     if sys_error(stat) then goto abort;
-    fline_line_add (fl, coll_p^, buf); {add this line to end of the collection}
+    fline_line_add_end (fl, coll_p^, buf); {add this line to end of the collection}
     end;                               {back to get next line from file}
 
 abort:                                 {skip to here on error with file open, STAT set}

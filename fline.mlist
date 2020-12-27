@@ -2,3 +2,4 @@ fline_coll.obj
 fline_file.obj
 fline_lib.obj
 fline_line.obj
+fline_pos.obj

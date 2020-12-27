@@ -36,6 +36,7 @@ fline_colltyp_lmem_k: (                {named collection in memory}
     end;
 
   fline_line_t = record                {one line in a collection}
+    prev_p: fline_line_p_t;            {points to previous line in this collection}
     next_p: fline_line_p_t;            {points to next line in this collection}
     coll_p: fline_coll_p_t;            {points to collection this line is in}
     lnum: sys_int_machine_t;           {1-N line number of this line}
@@ -111,8 +112,23 @@ procedure fline_lib_new (              {create new use of the FLINE library}
   out     stat: sys_err_t);            {completion status}
   val_param; extern;
 
-procedure fline_line_add (             {add line to end of collection}
+procedure fline_line_add_end (         {add line to end of collection}
   in out  fl: fline_t;                 {FLINE library use state}
   in out  coll: fline_coll_t;          {the collection to add to}
   in      line: univ string_var_arg_t); {the text line to add}
+  val_param; extern;
+
+function fline_pos_eol (               {determine whether at end of line}
+  in      pos: fline_pos_t)            {the position within a collection of lines}
+  :boolean;                            {at end of line, includes before start of coll}
+  val_param; extern;
+
+function fline_pos_nextline (          {advance to next line in collection of lines}
+  in out  pos: fline_pos_t)            {position to update}
+  :boolean;                            {TRUE: advance, not hit end of collection}
+  val_param; extern;
+
+procedure fline_pos_start (            {set position to start of collection}
+  in var  coll: fline_coll_t;          {the collection of lines}
+  out     pos: fline_pos_t);           {returned position}
   val_param; extern;
