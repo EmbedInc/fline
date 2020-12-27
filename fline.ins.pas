@@ -65,6 +65,12 @@ fline_colltyp_lmem_k: (                {named collection in memory}
 {
 *   Functions and subroutines.
 }
+function fline_char (                  {get current character, advance to next}
+  in out  pos: fline_pos_t;            {current character position, updated to next}
+  out     ch: char)                    {returned character, 0 for none}
+  :boolean;                            {TRUE: returning char, FALSE: end of line}
+  val_param; extern;
+
 procedure fline_coll_find_file (       {find existing FILE collection}
   in out  fl: fline_t;                 {FLINE library use state}
   in      tnam: univ string_var_arg_t; {full file absolute treename}
