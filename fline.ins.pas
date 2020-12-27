@@ -8,6 +8,7 @@ const
 
 type
   fline_line_p_t = ^fline_line_t;
+  fline_p_t = ^fline_t;
 
   fline_colltyp_k_t = (                {ID for type of collections of text lines}
     fline_colltyp_file_k,              {copy of a file}
@@ -15,9 +16,10 @@ type
 
   fline_coll_p_t = ^fline_coll_t;
   fline_coll_t = record                {info about one collection of lines}
-    colltyp: fline_colltyp_k_t;        {type of this collection}
+    fline_p: fline_p_t;                {pointer to library use this coll is within}
     first_p: fline_line_p_t;           {pointer to first line}
     last_p: fline_line_p_t;            {pointer to last line}
+    colltyp: fline_colltyp_k_t;        {type of this collection}
     case fline_colltyp_k_t of          {what kind of collection is this ?}
 fline_colltyp_file_k: (                {copy of file system file}
       file_tnam_p: string_var_p_t;     {full file treename}
@@ -42,18 +44,18 @@ fline_colltyp_lmem_k: (                {named collection in memory}
 
   fline_pos_p_t = ^fline_pos_t;
   fline_pos_t = record                 {character position within line}
-    line_p: fline_line_p_t;            {line containing the character}
+    coll_p: fline_coll_p_t;            {pointer to collection line is within}
+    line_p: fline_line_p_t;            {line containing the character, NIL before first}
     ind: sys_int_machine_t;            {1-N char index, 0 before, len+1 after}
     end;
 
-  fline_hpos_p_t = ^fline_hpos_t;
-  fline_hpos_t = record                {position within hierarchy of collections}
-    prev_p: fline_hpos_p_t;            {points to position within parent collection}
+  fline_hier_p_t = ^fline_hier_t;
+  fline_hier_t = record                {position within hierarchy of collections}
+    prev_p: fline_hier_p_t;            {points to position within parent collection}
     level: sys_int_machine_t;          {nesting level, 0 at top file}
     pos: fline_pos_t;                  {position within the current file}
     end;
 
-  fline_p_t = ^fline_t;
   fline_t = record                     {state for one use of this library}
     mem_p: util_mem_context_p_t;       {points to context for dynamic memory}
     coll_first_p: fline_flist_ent_p_t; {points to start of collections list}
@@ -62,16 +64,6 @@ fline_colltyp_lmem_k: (                {named collection in memory}
 {
 *   Functions and subroutines.
 }
-procedure fline_lib_end (              {end a use of the FLINE library}
-  in out  fline_p: fline_p_t);         {pointer to lib use state, returned NIL}
-  val_param; extern;
-
-procedure fline_lib_new (              {create new use of the FLINE library}
-  in out  mem: util_mem_context_t;     {parent mem context, will create subordinate}
-  out     fline_p: fline_p_t;          {returned pointer to new library use state}
-  out     stat: sys_err_t);            {completion status}
-  val_param; extern;
-
 procedure fline_coll_find_file (       {find existing FILE collection}
   in out  fl: fline_t;                 {FLINE library use state}
   in      tnam: univ string_var_arg_t; {full file absolute treename}
@@ -106,6 +98,16 @@ procedure fline_file_get (             {find or create contents of a text file}
   in out  fl: fline_t;                 {FLINE library use state}
   in      fnam: univ string_var_arg_t; {file name}
   out     coll_p: fline_coll_p_t;      {returned pointer to the text lines collection}
+  out     stat: sys_err_t);            {completion status}
+  val_param; extern;
+
+procedure fline_lib_end (              {end a use of the FLINE library}
+  in out  fline_p: fline_p_t);         {pointer to lib use state, returned NIL}
+  val_param; extern;
+
+procedure fline_lib_new (              {create new use of the FLINE library}
+  in out  mem: util_mem_context_t;     {parent mem context, will create subordinate}
+  out     fline_p: fline_p_t;          {returned pointer to new library use state}
   out     stat: sys_err_t);            {completion status}
   val_param; extern;
 

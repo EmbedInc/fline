@@ -30,9 +30,10 @@ begin
   util_mem_grab (                      {alloc mem for the new list entry}
     sizeof(ent_p^), fl.mem_p^, false, ent_p);
 
-  coll_p^.colltyp := colltyp;          {fill in fixed fields of the collection}
+  coll_p^.fline_p := addr(fl);         {fill in fixed fields of the collection}
   coll_p^.first_p := nil;
   coll_p^.last_p := nil;
+  coll_p^.colltyp := colltyp;
 
   ent_p^.next_p := nil;                {fill in new collections list entry}
   ent_p^.coll_p := coll_p;
