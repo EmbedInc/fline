@@ -6,7 +6,7 @@ define fline_char;
 *
 *   Function FLINE_CHAR (POS, CH)
 *
-*   Get the next character on the current line into CH, then advance the
+*   Get the current character on the current line into CH, then advance the
 *   position to the next character.
 *
 *   If there is a current character:

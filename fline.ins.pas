@@ -108,6 +108,12 @@ procedure fline_file_get (             {find or create contents of a text file}
   out     stat: sys_err_t);            {completion status}
   val_param; extern;
 
+function fline_hier_char (             {get current character, advance to next}
+  in out  hier: fline_hier_t;          {position within hierarchy, updated to next char}
+  out     ch: char)                    {returned character, 0 for none}
+  :boolean;                            {TRUE: returning char, FALSE: end of line}
+  val_param; extern;
+
 procedure fline_hier_create (          {create a new files hierarchy stack}
   out     hier_p: fline_hier_p_t;      {returned pointer to top level of new hierarchy}
   in var  coll: fline_coll_t);         {collection for top "file" of hierarchy}
@@ -115,6 +121,31 @@ procedure fline_hier_create (          {create a new files hierarchy stack}
 
 procedure fline_hier_delete (          {delete whole hierarchy}
   in out  hier_p: fline_hier_p_t);     {delete this level and all parents, returned NIL}
+  val_param; extern;
+
+function fline_hier_level (            {get hierarchy level}
+  in      hier: fline_hier_t)          {descriptor for the hierarchy level}
+  :sys_int_machine_t;                  {nesting level, 0 at top}
+  val_param; extern;
+
+procedure fline_hier_line (            {get current line at a hier level}
+  in      hier: fline_hier_t;          {descriptor for the hierarchy level}
+  out     str_p: string_var_p_t);      {pointer to line string, NIL if before first}
+  val_param; extern;
+
+function fline_hier_lnum (             {get line number at a hier level}
+  in      hier: fline_hier_t)          {descriptor for the hierarchy level}
+  :sys_int_machine_t;                  {1-N line number, 0 before first}
+  val_param; extern;
+
+procedure fline_hier_name (            {name of collection at a hier level}
+  in      hier: fline_hier_t;          {descriptor for the hierarchy level}
+  out     name_p: string_var_p_t);     {returned pointer to collection name}
+  val_param; extern;
+
+function fline_hier_nextline (         {to next line in current hierarchy level}
+  in out  hier: fline_hier_t)          {position within hierarchy, updated to start of next line}
+  :boolean;                            {TRUE: advanced, not hit end of collection}
   val_param; extern;
 
 function fline_hier_pop (              {pop back to previous hier level, delete old}
@@ -156,7 +187,7 @@ function fline_pos_eol (               {determine whether at end of line}
 
 function fline_pos_nextline (          {advance to next line in collection of lines}
   in out  pos: fline_pos_t)            {position to update}
-  :boolean;                            {TRUE: advance, not hit end of collection}
+  :boolean;                            {TRUE: advanced, not hit end of collection}
   val_param; extern;
 
 procedure fline_pos_start (            {set position to start of collection}

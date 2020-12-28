@@ -4,6 +4,12 @@ define fline_hier_delete;
 define fline_hier_push;
 define fline_hier_push_file;
 define fline_hier_pop;
+define fline_hier_level;
+define fline_hier_name;
+define fline_hier_lnum;
+define fline_hier_line;
+define fline_hier_char;
+define fline_hier_nextline;
 %include 'fline2.ins.pas';
 {
 ********************************************************************************
@@ -180,4 +186,129 @@ begin
   fline_hier_pop := true;              {indicate level popped successfully}
 
   fline_hier_delete (sub_p);           {delete the subordinate level}
+  end;
+{
+********************************************************************************
+*
+*   Function FLINE_HIER_LEVEL (HIER)
+*
+*   Get the nesting level of HIER.  The top level is 0, with each child level
+*   one higher.
+}
+function fline_hier_level (            {get hierarchy level}
+  in      hier: fline_hier_t)          {descriptor for the hierarchy level}
+  :sys_int_machine_t;                  {nesting level, 0 at top}
+  val_param;
+
+begin
+  fline_hier_level := hier.level;
+  end;
+{
+********************************************************************************
+*
+*   Subroutine FLINE_HIER_NAME (HIER, NAME_P)
+*
+*   Sets NAME_P pointing to the collection name for the hierarchy level HIER.
+*   NAME_P is returned NIL when the collection type has no name.
+}
+procedure fline_hier_name (            {name of collection at a hier level}
+  in      hier: fline_hier_t;          {descriptor for the hierarchy level}
+  out     name_p: string_var_p_t);     {returned pointer to collection name}
+  val_param;
+
+begin
+  case hier.pos.coll_p^.colltyp of     {what type of collection is it ?}
+fline_colltyp_file_k: begin
+      name_p := hier.pos.coll_p^.file_tnam_p;
+      end;
+fline_colltyp_lmem_k: begin
+      name_p := hier.pos.coll_p^.lmem_name_p;
+      end;
+otherwise
+    name_p := nil;
+    end;
+  end;
+{
+********************************************************************************
+*
+*   Function FLINE_HIER_LNUM (HIER)
+*
+*   Get the sequential number of the current line of the hierarchy level HIER.
+*   The first line in a collection is 1.  0 is returned when the position is
+*   before the start of the collection.
+}
+function fline_hier_lnum (             {get line number at a hier level}
+  in      hier: fline_hier_t)          {descriptor for the hierarchy level}
+  :sys_int_machine_t;                  {1-N line number, 0 before first}
+  val_param;
+
+begin
+  if hier.pos.line_p = nil then begin  {before start of collection ?}
+    fline_hier_lnum := 0;
+    return;
+    end;
+
+  fline_hier_lnum := hier.pos.line_p^.lnum;
+  end;
+{
+********************************************************************************
+*
+*   Subroutine FLINE_HIER_LINE (HIER, STR_P)
+*
+*   Sets STR_P pointing to the text string for the current line of the hierarchy
+*   level HIER.  STR_P is returned NIL when the position is before the start of
+*   the collection of lines.
+}
+procedure fline_hier_line (            {get current line at a hier level}
+  in      hier: fline_hier_t;          {descriptor for the hierarchy level}
+  out     str_p: string_var_p_t);      {pointer to line string, NIL if before first}
+  val_param;
+
+begin
+  if hier.pos.line_p = nil then begin  {before start of collection ?}
+    str_p := nil;
+    return;
+    end;
+
+  str_p := hier.pos.line_p^.str_p;
+  end;
+{
+********************************************************************************
+*
+*   Function FLINE_HIER_CHAR (HIER, CH)
+*
+*   Get the current character into CH, then advance the position to the next
+*   character.  The function returns TRUE when there is a character and the
+*   position was advanced.
+*
+*   The function returns FALSE when the position is at the end of a line.  In
+*   that case, CH is returned NULL (character code 0), and the position is not
+*   changed.
+}
+function fline_hier_char (             {get current character, advance to next}
+  in out  hier: fline_hier_t;          {position within hierarchy, updated to next char}
+  out     ch: char)                    {returned character, 0 for none}
+  :boolean;                            {TRUE: returning char, FALSE: end of line}
+  val_param;
+
+begin
+  fline_hier_char := fline_char (hier.pos, ch);
+  end;
+{
+********************************************************************************
+*
+*   Function FLINE_HIER_NEXTLINE (HIER)
+*
+*   Advance the current position of the hierarchy level HIER to the start of the
+*   next line.  The function returns TRUE when this is done successfully.  When
+*   the position was already at the end of the collection, then the function
+*   returns FALSE and the position is not altered.
+}
+function fline_hier_nextline (         {to next line in current hierarchy level}
+  in out  hier: fline_hier_t)          {position within hierarchy, updated to start of next line}
+  :boolean;                            {TRUE: advanced, not hit end of collection}
+  val_param;
+
+begin
+  fline_hier_nextline := fline_pos_nextline (hier.pos);
   end;
