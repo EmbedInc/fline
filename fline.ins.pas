@@ -41,6 +41,7 @@ fline_colltyp_lmem_k: (                {named collection in memory}
     coll_p: fline_coll_p_t;            {points to collection this line is in}
     lnum: sys_int_machine_t;           {1-N line number of this line}
     str_p: string_var_p_t;             {pointer to string for this line}
+    virt_p: fline_line_p_t;            {points to virtual line in source collection}
     end;
 
   fline_pos_p_t = ^fline_pos_t;
@@ -48,6 +49,12 @@ fline_colltyp_lmem_k: (                {named collection in memory}
     coll_p: fline_coll_p_t;            {pointer to collection line is within}
     line_p: fline_line_p_t;            {line containing the character, NIL before first}
     ind: sys_int_machine_t;            {1-N char index, 0 before, len+1 after}
+    end;
+
+  fline_posh_p_t = ^fline_posh_t;
+  fline_posh_t = record                {position within hierarchy of collections}
+    prev_p: fline_posh_p_t;            {points to position within parent file, NIL at top}
+    pos: fline_pos_t;                  {position at this hierarchy level}
     end;
 
   fline_hier_p_t = ^fline_hier_t;
@@ -130,6 +137,11 @@ function fline_hier_level (            {get hierarchy level}
 
 procedure fline_hier_line (            {get current line at a hier level}
   in      hier: fline_hier_t;          {descriptor for the hierarchy level}
+  out     line_p: fline_line_p_t);     {pointer to the line, NIL if before first}
+  val_param; extern;
+
+procedure fline_hier_line_str (        {get current line string at a hier level}
+  in      hier: fline_hier_t;          {descriptor for the hierarchy level}
   out     str_p: string_var_p_t);      {pointer to line string, NIL if before first}
   val_param; extern;
 
@@ -151,6 +163,12 @@ function fline_hier_nextline (         {to next line in current hierarchy level}
 function fline_hier_pop (              {pop back to previous hier level, delete old}
   in out  hier_p: fline_hier_p_t)      {pnt to curr level, will point to parent}
   :boolean;                            {popped, not at top level}
+  val_param; extern;
+
+procedure fline_hier_pos_get_virt (    {save curr virtual position within collections hierarchy}
+  in out  fl: fline_t;                 {FLINE library use state}
+  in      hier: fline_hier_t;          {current hierarchy to take position snapshot of}
+  out     posh_p: fline_posh_p_t);     {returned position snapshot, separately allocated}
   val_param; extern;
 
 procedure fline_hier_push (            {new hierarchy level, connect to collection}
@@ -178,6 +196,16 @@ procedure fline_line_add_end (         {add line to end of collection}
   in out  fl: fline_t;                 {FLINE library use state}
   in out  coll: fline_coll_t;          {the collection to add to}
   in      line: univ string_var_arg_t); {the text line to add}
+  val_param; extern;
+
+procedure fline_line_virt (            {add virtual reference to existing line}
+  in out  line: fline_line_t;          {the line to add virtual reference to}
+  in var  virt: fline_line_t);         {the line to reference as virtual source}
+  val_param; extern;
+
+procedure fline_line_virt_last (       {add virtual ref to last line of collection}
+  in out  coll: fline_coll_t;          {add virt ref to last line of this coll}
+  in var  virt: fline_line_t);         {the line to reference as virtual source}
   val_param; extern;
 
 function fline_pos_eol (               {determine whether at end of line}

@@ -2,6 +2,8 @@
 }
 module fline_line;
 define fline_line_add_end;
+define fline_line_virt;
+define fline_line_virt_last;
 %include 'fline2.ins.pas';
 {
 ********************************************************************************
@@ -29,6 +31,7 @@ begin
 
   line_p^.next_p := nil;               {fill in fields in the line descriptor}
   line_p^.coll_p := addr(coll);
+  line_p^.virt_p := nil;
 
   if coll.last_p = nil                 {link new line to the collection}
     then begin                         {this is first line in collection}
@@ -43,4 +46,36 @@ begin
       end
     ;
   coll.last_p := line_p;
+  end;
+{
+********************************************************************************
+*
+*   Subroutine FLINE_LINE_VIRT (LINE, VIRT)
+*
+*   Reference VIRT as the virtual source line of the text line LINE.
+}
+procedure fline_line_virt (            {add virtual reference to existing line}
+  in out  line: fline_line_t;          {the line to add virtual reference to}
+  in var  virt: fline_line_t);         {the line to reference as virtual source}
+  val_param;
+
+begin
+  line.virt_p := addr(virt);
+  end;
+{
+********************************************************************************
+*
+*   Subroutine FLINE_LINE_VIRT_LAST (COLL, VIRT)
+*
+*   Reference VIRT as the virtual source line of the last line in the collection
+*   COLL.
+}
+procedure fline_line_virt_last (       {add virtual ref to last line of collection}
+  in out  coll: fline_coll_t;          {add virt ref to last line of this coll}
+  in var  virt: fline_line_t);         {the line to reference as virtual source}
+  val_param;
+
+begin
+  if coll.last_p = nil then return;    {there is no last line, nothing to do ?}
+  fline_line_virt (coll.last_p^, virt);
   end;
