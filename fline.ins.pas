@@ -51,16 +51,10 @@ fline_colltyp_lmem_k: (                {named collection in memory}
     ind: sys_int_machine_t;            {1-N char index, 0 before, len+1 after}
     end;
 
-  fline_posh_p_t = ^fline_posh_t;
-  fline_posh_t = record                {position within hierarchy of collections}
-    prev_p: fline_posh_p_t;            {points to position within parent file, NIL at top}
-    pos: fline_pos_t;                  {position at this hierarchy level}
-    end;
-
   fline_hier_p_t = ^fline_hier_t;
   fline_hier_t = record                {position within hierarchy of collections}
     prev_p: fline_hier_p_t;            {points to parent hierarchy level}
-    level: sys_int_machine_t;          {nesting level, 0 at top file}
+    level: sys_int_machine_t;          {nesting level, 0 at top}
     pos: fline_pos_t;                  {position within the current collection}
     end;
 
@@ -163,12 +157,6 @@ function fline_hier_nextline (         {to next line in current hierarchy level}
 function fline_hier_pop (              {pop back to previous hier level, delete old}
   in out  hier_p: fline_hier_p_t)      {pnt to curr level, will point to parent}
   :boolean;                            {popped, not at top level}
-  val_param; extern;
-
-procedure fline_hier_pos_get_virt (    {save curr virtual position within collections hierarchy}
-  in out  fl: fline_t;                 {FLINE library use state}
-  in      hier: fline_hier_t;          {current hierarchy to take position snapshot of}
-  out     posh_p: fline_posh_p_t);     {returned position snapshot, separately allocated}
   val_param; extern;
 
 procedure fline_hier_push (            {new hierarchy level, connect to collection}

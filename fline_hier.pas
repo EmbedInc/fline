@@ -11,7 +11,6 @@ define fline_hier_line;
 define fline_hier_line_str;
 define fline_hier_char;
 define fline_hier_nextline;
-define filne_hier_pos_get_virt;
 %include 'fline2.ins.pas';
 {
 ********************************************************************************
@@ -329,48 +328,4 @@ function fline_hier_nextline (         {to next line in current hierarchy level}
 
 begin
   fline_hier_nextline := fline_pos_nextline (hier.pos);
-  end;
-{
-********************************************************************************
-*
-*   Subroutine FLINE_HIER_POS_GET_VIRT (FL, HIER, POSH_P)
-*
-*   Take a snapshot of the current hierarchical position.  New memory will be
-*   allocated for the hierarchical position that will not be deallocated when
-*   hierarchy levels are popped or deleted.  The returned position descriptor
-*   will persist with the use of the FLINE library, FL.
-*
-*   The returned position will reflect virtual positions, when available.
-}
-procedure fline_hier_pos_get_virt (    {save curr virtual position within collections hierarchy}
-  in out  fl: fline_t;                 {FLINE library use state}
-  in      hier: fline_hier_t;          {current hierarchy to take position snapshot of}
-  out     posh_p: fline_posh_p_t);     {returned position snapshot, separately allocated}
-  val_param;
-
-var
-  hier_p: fline_hier_p_t;              {pointer to current level in hierarchy}
-  prev_pp: ^fline_posh_p_t;            {where to write pointer to new position level}
-  newposh_p: fline_posh_p_t;           {pointer to new position descriptor}
-
-begin
-  prev_pp := addr(posh_p);             {pointer to lowest pos level is returned}
-
-  hier_p := addr(hier);                {init hier level to save position of}
-  while hier_p <> nil do begin         {up the hierarchy levels}
-    util_mem_grab (                    {allocate descriptor for position at this level}
-      sizeof(newposh_p^), fl.mem_p^, false, newposh_p);
-    newposh_p^.prev_p := nil;          {init to at top level}
-    newposh_p^.pos := hier_p^.pos;     {save position at this hierarchy level}
-
-    if hier_p^.pos.line_p^.virt_p <> nil then begin {virtual source line exists ?}
-      newposh_p^.pos.coll_p := hier_p^.pos.line_p^.virt_p^.coll_p; {point to virtual coll}
-      newposh_p^.pos.line_p := hier_p^.pos.line_p^.virt_p; {point to virtual line}
-      newposh_p^.pos.ind := 1;         {indicate start of line (we don't know where exactly)}
-      end;
-
-    prev_pp^ := newposh_p;             {set link from lower level}
-    prev_pp := addr(newposh_p^.prev_p); {where to write link to next higher level}
-    hier_p := hier_p^.prev_p;          {to next higher level in the hierarchy}
-    end;
   end;
