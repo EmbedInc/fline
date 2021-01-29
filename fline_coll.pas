@@ -4,19 +4,23 @@ module fline_coll;
 define fline_coll_new;
 define fline_coll_new_file;
 define fline_coll_new_lmem;
+define fline_coll_new_virt;
+define fline_coll_find;
 define fline_coll_find_file;
 define fline_coll_find_lmem;
+define fline_coll_find_virt;
 %include 'fline2.ins.pas';
 {
 ********************************************************************************
 *
-*   Subroutine FLINE_COLL_NEW (FL, COLLTYP, COLL_P)
+*   Subroutine FLINE_COLL_NEW (FL, NAME, COLLTYP, COLL_P)
 *
-*   Create a new collection of type COLLTYP.  The type-specific fields are not
-*   filled in.
+*   Create a new collection named NAME, of type COLLTYP.  The type-specific
+*   fields are not filled in.
 }
 procedure fline_coll_new (             {create new empty collection}
   in out  fl: fline_t;                 {FLINE library use state}
+  in      name: string_var_arg_t;      {collection name}
   in      colltyp: fline_colltyp_k_t;  {type of the new collection}
   out     coll_p: fline_coll_p_t);     {pointer to new coll, type-specific not filled in}
   val_param;
@@ -33,6 +37,8 @@ begin
   coll_p^.fline_p := addr(fl);         {fill in fixed fields of the collection}
   coll_p^.first_p := nil;
   coll_p^.last_p := nil;
+  string_alloc (name.len, fl.mem_p^, false, coll_p^.name_p);
+  string_copy (name, coll_p^.name_p^);
   coll_p^.colltyp := colltyp;
 
   ent_p^.next_p := nil;                {fill in new collections list entry}
@@ -62,10 +68,7 @@ procedure fline_coll_new_file (        {create new empty collection, type FILE}
   val_param;
 
 begin
-  fline_coll_new (fl, fline_colltyp_file_k, coll_p); {create new collection}
-  string_alloc (                       {create the treename string}
-    tnam.len, fl.mem_p^, false, coll_p^.file_tnam_p);
-  string_copy (tnam, coll_p^.file_tnam_p^); {fill in the file treename}
+  fline_coll_new (fl, tnam, fline_colltyp_file_k, coll_p); {create new collection}
   end;
 {
 ********************************************************************************
@@ -81,10 +84,63 @@ procedure fline_coll_new_lmem (        {create new empty collection, type LMEM}
   val_param;
 
 begin
-  fline_coll_new (fl, fline_colltyp_lmem_k, coll_p); {create new collection}
-  string_alloc (                       {create the name string}
-    name.len, fl.mem_p^, false, coll_p^.lmem_name_p);
-  string_copy (name, coll_p^.lmem_name_p^); {fill in collection name}
+  fline_coll_new (fl, name, fline_colltyp_lmem_k, coll_p); {create new collection}
+  end;
+{
+********************************************************************************
+*
+*   Subroutine FLINE_COLL_NEW_VIRT (FL, NAME, COLL_P)
+*
+*   Create a new collection of type VIRT.
+}
+procedure fline_coll_new_virt (        {create new empty collection, type VIRT}
+  in out  fl: fline_t;                 {FLINE library use state}
+  in      name: univ string_var_arg_t; {collection name}
+  out     coll_p: fline_coll_p_t);     {returned pointer to the new collection}
+  val_param;
+
+begin
+  fline_coll_new (fl, name, fline_colltyp_virt_k, coll_p); {create new collection}
+  end;
+{
+********************************************************************************
+*
+*   Subroutine FLINE_COLL_FIND (FL, NAME, COLLTYP, COLL_P)
+*
+*   Find the existing collection with name NAME and of type COLLTYP.  When
+*   COLLTYP is FLINE_COLLTYP_ANY_K, then the first collection encountered
+*   matching NAME is returned.  COLL_P is returned NIL if the collection does
+*   not exist.
+}
+procedure fline_coll_find (            {find existing FILE collection}
+  in out  fl: fline_t;                 {FLINE library use state}
+  in      name: univ string_var_arg_t; {collection name, must match exactly}
+  in      colltyp: fline_colltyp_k_t;  {type of the new collection}
+  out     coll_p: fline_coll_p_t);     {pointer to collection, NIL not found}
+  val_param;
+
+var
+  ent_p: fline_flist_ent_p_t;          {points to current collections list entry}
+
+label
+  next_ent;
+
+begin
+  coll_p := nil;                       {init to the collection was not found}
+
+  ent_p := fl.coll_first_p;            {init to first list entry}
+  while ent_p <> nil do begin          {scan the list}
+    if                                 {not the right type ?}
+        (colltyp <> fline_colltyp_any_k) and
+        (ent_p^.coll_p^.colltyp <> colltyp)
+      then goto next_ent;
+    if not string_equal (ent_p^.coll_p^.name_p^, name) {name doesn't match ?}
+      then goto next_ent;
+    coll_p := ent_p^.coll_p;           {return pointer to this collection}
+    return;
+next_ent:                              {advance to the next list entry}
+    ent_p := ent_p^.next_p;
+    end;                               {back to check this new list entry}
   end;
 {
 ********************************************************************************
@@ -101,26 +157,8 @@ procedure fline_coll_find_file (       {find existing FILE collection}
   out     coll_p: fline_coll_p_t);     {pointer to collection, NIL not found}
   val_param;
 
-var
-  ent_p: fline_flist_ent_p_t;          {points to current collections list entry}
-
-label
-  next_ent;
-
 begin
-  coll_p := nil;                       {init to the collection was not found}
-
-  ent_p := fl.coll_first_p;            {init to first list entry}
-  while ent_p <> nil do begin          {scan the list}
-    if ent_p^.coll_p^.colltyp <> fline_colltyp_file_k {not a FILE coll type ?}
-      then goto next_ent;
-    if not string_equal (ent_p^.coll_p^.file_tnam_p^, tnam) {not this file ?}
-      then goto next_ent;
-    coll_p := ent_p^.coll_p;           {return pointer to this collection}
-    return;
-next_ent:                              {advance to the next list entry}
-    ent_p := ent_p^.next_p;
-    end;                               {back to check this new list entry}
+  fline_coll_find (fl, tnam, fline_colltyp_file_k, coll_p);
   end;
 {
 ********************************************************************************
@@ -136,24 +174,23 @@ procedure fline_coll_find_lmem (       {find existing LMEM collection}
   out     coll_p: fline_coll_p_t);     {pointer to collection, NIL not found}
   val_param;
 
-var
-  ent_p: fline_flist_ent_p_t;          {points to current collections list entry}
-
-label
-  next_ent;
+begin
+  fline_coll_find (fl, name, fline_colltyp_lmem_k, coll_p);
+  end;
+{
+********************************************************************************
+*
+*   Subroutine FLINE_COLL_FIND_VIRT (FL, NAME, COLL_P)
+*
+*   Find the existing VIRT collection of name NAME.  COLL_P is returned NIL if
+*   the collection does not exist.
+}
+procedure fline_coll_find_virt (       {find existing VIRT collection}
+  in out  fl: fline_t;                 {FLINE library use state}
+  in      name: univ string_var_arg_t; {collection name}
+  out     coll_p: fline_coll_p_t);     {pointer to collection, NIL not found}
+  val_param;
 
 begin
-  coll_p := nil;                       {init to the collection was not found}
-
-  ent_p := fl.coll_first_p;            {init to first list entry}
-  while ent_p <> nil do begin          {scan the list}
-    if ent_p^.coll_p^.colltyp <> fline_colltyp_lmem_k {not a LMEM coll type ?}
-      then goto next_ent;
-    if not string_equal (ent_p^.coll_p^.lmem_name_p^, name) {not this lmem ?}
-      then goto next_ent;
-    coll_p := ent_p^.coll_p;           {return pointer to this collection}
-    return;
-next_ent:                              {advance to the next list entry}
-    ent_p := ent_p^.next_p;
-    end;                               {back to check this new list entry}
+  fline_coll_find (fl, name, fline_colltyp_virt_k, coll_p);
   end;
