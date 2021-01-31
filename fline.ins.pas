@@ -147,6 +147,14 @@ procedure fline_file_get (             {find or create contents of a text file}
   out     stat: sys_err_t);            {completion status}
   val_param; extern;
 
+procedure fline_file_get_suff (        {find or create contents of a text file, fnam suffixex}
+  in out  fl: fline_t;                 {FLINE library use state}
+  in      fnam: univ string_var_arg_t; {file name}
+  in      suff: string;                {file name suffixes, blank separated}
+  out     coll_p: fline_coll_p_t;      {returned pointer to the text lines collection}
+  out     stat: sys_err_t);            {completion status}
+  val_param; extern;
+
 function fline_hier_char (             {get current character, advance to next}
   in out  hier: fline_hier_t;          {position within hierarchy, updated to next char}
   out     ch: char)                    {returned character, 0 for none}
