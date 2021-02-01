@@ -175,9 +175,14 @@ function fline_hier_level (            {get hierarchy level}
   :sys_int_machine_t;                  {nesting level, 0 at top}
   val_param; extern;
 
-procedure fline_hier_line (            {get current line at a hier level}
+procedure fline_hier_line (            {get pointer to current line at a hier level}
   in      hier: fline_hier_t;          {descriptor for the hierarchy level}
   out     line_p: fline_line_p_t);     {pointer to the line, NIL if before first}
+  val_param; extern;
+
+procedure fline_hier_linenx (          {get pointer to next line at a hier level}
+  in      hier: fline_hier_t;          {descriptor for the hierarchy level}
+  out     line_p: fline_line_p_t);     {pointer to the next line, NIL if before first}
   val_param; extern;
 
 procedure fline_hier_line_str (        {get current line string at a hier level}

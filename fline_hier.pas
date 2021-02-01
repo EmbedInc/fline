@@ -8,6 +8,7 @@ define fline_hier_level;
 define fline_hier_name;
 define fline_hier_lnum;
 define fline_hier_line;
+define fline_hier_linenx;
 define fline_hier_line_str;
 define fline_hier_char;
 define fline_hier_nextline;
@@ -236,13 +237,36 @@ begin
 *   Get the pointer to the current line at the hierarchy level HIER.  LINE_P is
 *   returned NIL if the position is before the start of the collection.
 }
-procedure fline_hier_line (            {get current line at a hier level}
+procedure fline_hier_line (            {get pointer to current line at a hier level}
   in      hier: fline_hier_t;          {descriptor for the hierarchy level}
   out     line_p: fline_line_p_t);     {pointer to the line, NIL if before first}
   val_param;
 
 begin
   line_p := hier.cpos.line_p;
+  end;
+{
+********************************************************************************
+*
+*   Subroutine FLINE_HIER_LINENX (HIER, LINE_P)
+*
+*   Get the pointer to the next line at the hierarchy level HIER.  LINE_P is
+*   returned NIL if the position is before the start of the collection.
+}
+procedure fline_hier_linenx (          {get pointer to next line at a hier level}
+  in      hier: fline_hier_t;          {descriptor for the hierarchy level}
+  out     line_p: fline_line_p_t);     {pointer to the next line, NIL if before first}
+  val_param;
+
+begin
+  if hier.cpos.line_p = nil
+    then begin                         {before start of collection}
+      line_p := hier.cpos.coll_p^.first_p;
+      end
+    else begin                         {at an actual line}
+      line_p := hier.cpos.line_p^.next_p;
+      end
+    ;
   end;
 {
 ********************************************************************************
