@@ -1,4 +1,5 @@
 module fline_hier;
+define fline_hier_new;
 define fline_hier_create;
 define fline_hier_delete;
 define fline_hier_push;
@@ -16,43 +17,68 @@ define fline_hier_nextline;
 {
 ********************************************************************************
 *
-*   Local subroutine FLINE_HIER_NEW (PARENT_P, SUB_P, COLL)
+*   Subroutine FLINE_HIER_NEW (FL, PARENT_P, HIER_P)
 *
-*   Create a new hierarchy level for the collection of lines COLL.  SUB_P will
-*   point to the new hierarchy level.  When PARENT_P is NULL, then SUB_P will be
-*   the top level of a new hierarchy.  Otherwise, the new hierarchy level will
-*   subordinate to the one pointed to by PARENT_P.
+*   Create a new empty hierarchy level.  PARENT_P points to the parent hierarchy
+*   level, if any.  When PARENT_P is NIL, then a new top level will be created.
+*
+*   The new hierarchy level is linked to the parent (when appropriate) and
+*   otherwise initialized to default or benign values.  Not specific character
+*   position will be filled in.
 }
-procedure fline_hier_new (             {create new hierarchy level}
-  in      parent_p: fline_hier_p_t;    {points to parent hierarchy level, if any}
-  out     sub_p: fline_hier_p_t;       {returned pointing to new hierarchy level}
-  in var  coll: fline_coll_t);         {collection of lines new level will refer to}
+procedure fline_hier_new (             {low level routine to create new hierchy descriptor}
+  in out  fl: fline_t;                 {FLINE library use state}
+  in      parent_p: fline_hier_p_t;    {pointer to parent, NIL for create top level}
+  out     hier_p: fline_hier_p_t);     {returned pointer to new hier level, CPOS not filled in}
   val_param;
 
 begin
-  util_mem_grab (                      {allocate memory for top hierarchy level}
-    sizeof(sub_p^),                    {amount of memory to allocate}
-    coll.fline_p^.mem_p^,              {memory context}
+  util_mem_grab (                      {allocate new hiearchy level descriptor}
+    sizeof(hier_p^),                   {amount of memory to allocate}
+    fl.mem_p^,                         {memory context}
     true,                              {allow deallocation}
-    sub_p);                            {returned pointer to the new memory}
+    hier_p);                           {returned pointer to the new memory}
 
-  sub_p^.prev_p := parent_p;           {point to parent hierarchy level, if any}
+  hier_p^.prev_p := parent_p;          {point to parent level, if any}
 
   if parent_p = nil
     then begin                         {creating top level}
-      sub_p^.level := 0;
+      hier_p^.level := 0;
+      hier_p^.blklev := 0;
       end
     else begin                         {creating subordinate level}
-      sub_p^.level := parent_p^.level + 1;
+      hier_p^.level := parent_p^.level + 1;
+      hier_p^.blklev := parent_p^.blklev + 1;
       end
     ;
 
-  fline_cpos_start (coll, sub_p^.cpos); {init to before start of collection}
+  fline_cpos_init (hier_p^.cpos);      {init char position to default or benign values}
   end;
 {
 ********************************************************************************
 *
-*   Subroutine FLINE_HIER_CREATE (HIER_P, COLL)
+*   Local subroutine FLINE_HIER_NEW_COLL (FL, PARENT_P, HIER_P, COLL)
+*
+*   Create a new hierarchy level for the collection of lines COLL.  HIER_P will
+*   point to the new hierarchy level.  When PARENT_P is NULL, then a new top
+*   level hiearchy is created.  Otherwise, the new hierarchy level will
+*   subordinate to the one pointed to by PARENT_P.
+}
+procedure fline_hier_new_coll (        {create new hierarchy level}
+  in out  fl: fline_t;                 {FLINE library use state}
+  in      parent_p: fline_hier_p_t;    {points to parent hierarchy level, if any}
+  out     hier_p: fline_hier_p_t;      {returned pointing to new hierarchy level}
+  in var  coll: fline_coll_t);         {collection of lines new level will refer to}
+  val_param;
+
+begin
+  fline_hier_new (coll.fline_p^, parent_p, hier_p); {create new hier descriptor}
+  fline_cpos_coll (hier_p^.cpos, coll); {init char pos to before start of collection}
+  end;
+{
+********************************************************************************
+*
+*   Subroutine FLINE_HIER_CREATE (FL, HIER_P, COLL)
 *
 *   Create a new hierarchy for reading nested "files".  The top level of the
 *   hierarchy is created, with HIER_P returned pointing to it.  This top level
@@ -60,34 +86,37 @@ begin
 *   start of the collection.
 }
 procedure fline_hier_create (          {create a new files hierarchy stack}
+  in out  fl: fline_t;                 {FLINE library use state}
   out     hier_p: fline_hier_p_t;      {returned pointer to top level of new hierarchy}
   in var  coll: fline_coll_t);         {collection for top "file" of hierarchy}
   val_param;
 
 begin
-  fline_hier_new (nil, hier_p, coll);
+  fline_hier_new_coll (fl, nil, hier_p, coll);
   end;
 {
 ********************************************************************************
 *
-*   Subroutine FLINE_HIER_DELETE (HIER_P)
+*   Subroutine FLINE_HIER_DELETE (FL, HIER_P)
 *
 *   Delete the hierarchy pointed to by HIER_P, which is returned NIL.  All
 *   hierarchy levels from the one pointed to by HIER_P to the top level will be
 *   deleted.
 }
 procedure fline_hier_delete (          {delete whole hierarchy}
+  in out  fl: fline_t;                 {FLINE library use state}
   in out  hier_p: fline_hier_p_t);     {delete this level and all parents, returned NIL}
   val_param;
 
 begin
-  while fline_hier_pop(hier_p) do begin {keep popping until nothing left to pop}
+  while hier_p <> nil do begin         {pop levels until nothing left}
+    fline_hier_pop (fl, hier_p);
     end;
   end;
 {
 ********************************************************************************
 *
-*   Subroutine FLINE_HIER_PUSH (HIER_P, COLL)
+*   Subroutine FLINE_HIER_PUSH (FL, HIER_P, COLL)
 *
 *   Create a new subordinate hierarchy level, connected to the collection COLL.
 *   HIER_P points to the parent hierarchy level on entry, and is returned
@@ -95,6 +124,7 @@ begin
 *   start of COLL.
 }
 procedure fline_hier_push (            {new hierarchy level, connect to collection}
+  in out  fl: fline_t;                 {FLINE library use state}
   in out  hier_p: fline_hier_p_t;      {pnt to curr level, will point to child}
   in var  coll: fline_coll_t);         {collection to read at the new level}
   val_param;
@@ -105,13 +135,13 @@ var
 begin
   if hier_p = nil then return;         {no existing level, nothing to do ?}
 
-  fline_hier_new (hier_p, sub_p, coll); {create the new subordinate level}
+  fline_hier_new_coll (fl, hier_p, sub_p, coll); {create the new subordinate level}
   hier_p := sub_p;                     {return pointer to the new level}
   end;
 {
 ********************************************************************************
 *
-*   Subroutine FLINE_HIER_PUSH_FILE (HIER_P, FNAM, STAT)
+*   Subroutine FLINE_HIER_PUSH_FILE (FL, HIER_P, FNAM, STAT)
 *
 *   Create a new subordinate hierarchy level, connected to the lines of the file
 *   FNAM.  A collection for the lines of file FNAME will be created if not
@@ -120,6 +150,7 @@ begin
 *   will be before the start of the lines of file FNAM.
 }
 procedure fline_hier_push_file (       {new hierarchy level, connect to coll of a file}
+  in out  fl: fline_t;                 {FLINE library use state}
   in out  hier_p: fline_hier_p_t;      {pnt to curr level, will point to child}
   in      fnam: univ string_var_arg_t; {name of file to read at the new level}
   out     stat: sys_err_t);            {completion status}
@@ -139,42 +170,31 @@ begin
     stat);
   if sys_error(stat) then return;
 
-  fline_hier_push (hier_p, coll_p^);   {create subordinate level for the file lines}
+  fline_hier_push (fl, hier_p, coll_p^); {create subordinate level for the file lines}
   end;
 {
 ********************************************************************************
 *
-*   Function FLINE_HIER_POP (HIER_P)
+*   Subroutine FLINE_HIER_POP (FL, HIER_P)
 *
 *   Pop up one level from the hierarchy level pointed to by HIER_P.  The
 *   original level will be deleted, with HIER_P returned pointing to the parent
-*   level.
-*
-*   If already at the top level, then nothing is altered and the function
-*   returns FALSE.  The function returns TRUE in the normal case where the
-*   existing level was deleted and HIER_P is returned pointing to the parent
-*   level.
+*   level.  HIER_P is returned NIL when the top level is popped.
 }
-function fline_hier_pop (              {pop back to previous hier level, delete old}
-  in out  hier_p: fline_hier_p_t)      {pnt to curr level, will point to parent}
-  :boolean;                            {popped, not at top level}
+procedure fline_hier_pop (             {pop back to previous hier level, delete old}
+  in out  fl: fline_t;                 {FLINE library use state}
+  in out  hier_p: fline_hier_p_t);     {will point to parent, NIL when popped top level}
   val_param;
 
 var
   sub_p: fline_hier_p_t;               {pointer to subordinate level to delete}
-  mem_p: util_mem_context_p_t;         {pointer to memory context}
 
 begin
-  fline_hier_pop := false;             {init to level popped unsuccessfully}
-  if hier_p = nil then return;         {no valid input, nothing to do ?}
-  if hier_p^.prev_p = nil then return; {already at top level ?}
-
+  if hier_p = nil then return;         {nothing to pop ?}
   sub_p := hier_p;                     {save pointer to level to delete}
   hier_p := hier_p^.prev_p;            {return pointing to parent level}
 
-  mem_p := sub_p^.cpos.coll_p^.fline_p^.mem_p; {get pointer to memory context}
-  util_mem_ungrab (sub_p, mem_p^);     {deallocate this hierarchy level}
-  fline_hier_pop := true;              {indicate level popped successfully}
+  util_mem_ungrab (sub_p, fl.mem_p^);  {deallocate this hierarchy level}
   end;
 {
 ********************************************************************************

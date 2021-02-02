@@ -1,25 +1,61 @@
 module fline_cpos;
-define fline_cpos_start;
+define fline_cpos_init;
+define fline_cpos_coll;
+define fline_cpos_line;
 define fline_cpos_eol;
 define fline_cpos_nextline;
 %include 'fline2.ins.pas';
 {
 ********************************************************************************
 *
-*   Subroutine FLINE_CPOS_START (COLL, CPOS)
+*   Subroutine FLINE_CPOS_INIT (CPOS)
+*
+*   Initialize the character position descriptor CPOS to default or benign
+*   values.
+}
+procedure fline_cpos_init (            {init character position to default or benign values}
+  in out  cpos: fline_cpos_t);         {character position to initialize}
+  val_param;
+
+begin
+  cpos.coll_p := nil;
+  cpos.line_p := nil;
+  cpos.ind := 0;
+  end;
+{
+********************************************************************************
+*
+*   Subroutine FLINE_CPOS_COLL (CPOS, COLL)
 *
 *   Set the character position CPOS to before the start of the collection of
 *   lines COLL.
 }
-procedure fline_cpos_start (           {set char position to before collection}
-  in var  coll: fline_coll_t;          {the collection of lines}
-  out     cpos: fline_cpos_t);         {returned position}
+procedure fline_cpos_coll (            {set char position to start of collection}
+  out     cpos: fline_cpos_t;          {updated character position}
+  in var  coll: fline_coll_t);         {the collection of lines}
   val_param;
 
 begin
   cpos.coll_p := addr(coll);
   cpos.line_p := nil;
   cpos.ind := 0;
+  end;
+{
+********************************************************************************
+*
+*   Subroutine FLINE_CPOS_LINE (CPOS, LINE)
+*
+*   Set the character position CPOS to the start of the line LINE.
+}
+procedure fline_cpos_line (            {set character position to start of a line}
+  in out  cpos: fline_cpos_t;          {character position to set}
+  in var  line: fline_line_t);         {line to set char position to start of}
+  val_param;
+
+begin
+  cpos.coll_p := line.coll_p;          {point to the collection the line is in}
+  cpos.line_p := addr(line);           {set pointer to the current line}
+  cpos.ind := 1;                       {to first character on the line}
   end;
 {
 ********************************************************************************
