@@ -25,7 +25,7 @@ define fline_block_getnext_str;
 }
 procedure fline_block_new (            {create new blank start of block hier level}
   in out  fl: fline_t;                 {FLINE library use state}
-  in out  parent_p: fline_hier_p_t;    {pointer to parent hiearchy level, NIL create top}
+  in      parent_p: fline_hier_p_t;    {pointer to parent hiearchy level, NIL create top}
   out     hier_p: fline_hier_p_t);     {returned pointer to new hier level, CPOS not filled in}
   val_param;
 
@@ -44,7 +44,7 @@ begin
 }
 procedure fline_block_new_copy (       {start hier block, copy original position}
   in out  fl: fline_t;                 {FLINE library use state}
-  in out  parent_p: fline_hier_p_t;    {pointer to parent hiearchy level, NIL create top}
+  in      parent_p: fline_hier_p_t;    {pointer to parent hiearchy level, NIL create top}
   out     hier_p: fline_hier_p_t);     {returned pointer to new hier level}
   val_param;
 
@@ -68,7 +68,7 @@ begin
 }
 procedure fline_block_new_line (       {start hier block at specific line}
   in out  fl: fline_t;                 {FLINE library use state}
-  in out  parent_p: fline_hier_p_t;    {pointer to parent hiearchy level, NIL create top}
+  in      parent_p: fline_hier_p_t;    {pointer to parent hiearchy level, NIL create top}
   in var  line: fline_line_t;          {position will be at start of this line}
   out     hier_p: fline_hier_p_t);     {returned pointer to new hier level}
   val_param;
