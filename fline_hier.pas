@@ -1,8 +1,11 @@
 module fline_hier;
 define fline_hier_new;
+define fline_hier_new_coll;
+define fline_hier_new_line;
 define fline_hier_create;
 define fline_hier_delete;
-define fline_hier_push;
+define fline_hier_push_coll;
+define fline_hier_push_line;
 define fline_hier_push_file;
 define fline_hier_pop;
 define fline_hier_level;
@@ -74,8 +77,73 @@ procedure fline_hier_new_coll (        {create new hierarchy level}
   val_param;
 
 begin
-  fline_hier_new (coll.fline_p^, parent_p, hier_p); {create new hier descriptor}
+  fline_hier_new (fl, parent_p, hier_p); {create new hier descriptor}
   fline_cpos_coll (hier_p^.cpos, coll); {init char pos to before start of collection}
+  end;
+{
+********************************************************************************
+*
+*   Local subroutine FLINE_HIER_NEW_LINE (FL, PARENT_P, HIER_P, LINE)
+*
+*   Create a new hierarchy level, positioned to before the line LINE.  HIER_P
+*   will point to the new hierarchy level.  When PARENT_P is NULL, then a new
+*   top level hiearchy is created.  Otherwise, the new hierarchy level will
+*   subordinate to the one pointed to by PARENT_P.
+}
+procedure fline_hier_new_line (        {create new hierarchy level}
+  in out  fl: fline_t;                 {FLINE library use state}
+  in      parent_p: fline_hier_p_t;    {points to parent hierarchy level, if any}
+  out     hier_p: fline_hier_p_t;      {returned pointing to new hierarchy level}
+  in var  line: fline_line_t);         {line to set char position before start of}
+  val_param;
+
+begin
+  fline_hier_new (fl, parent_p, hier_p); {create new hier descriptor}
+  fline_cpos_line (hier_p^.cpos, line); {init char pos to before start of collection}
+  end;
+{
+********************************************************************************
+*
+*   Subroutine FLINE_HIER_PUSH_COLL (FL, HIER_P, COLL)
+*
+*   Create a new subordinate hierarchy level, positioned to before the first
+*   line of COLL.  HIER_P points to the parent hierarchy level on entry, and is
+*   returned pointing to the newly-created child level.
+}
+procedure fline_hier_push_coll (       {new hierarchy level, connect to collection}
+  in out  fl: fline_t;                 {FLINE library use state}
+  in out  hier_p: fline_hier_p_t;      {pnt to curr level, will point to child}
+  in var  coll: fline_coll_t);         {collection to read at the new level}
+  val_param;
+
+var
+  sub_p: fline_hier_p_t;               {pointer to new subordinate level}
+
+begin
+  fline_hier_new_coll (fl, hier_p, sub_p, coll); {create the new subordinate level}
+  hier_p := sub_p;                     {return pointer to the new level}
+  end;
+{
+********************************************************************************
+*
+*   Subroutine FLINE_HIER_PUSH_LINE (FL, HIER_P, LINE)
+*
+*   Create a new subordinate hierarchy level, positioned to before the start of
+*   the line LINE.  HIER_P points to the parent hierarchy level on entry, and is
+*   returned pointing to the newly-created child level.
+}
+procedure fline_hier_push_line (       {new hierarchy level, to before start of a line}
+  in out  fl: fline_t;                 {FLINE library use state}
+  in out  hier_p: fline_hier_p_t;      {pnt to curr level, will point to child}
+  in var  line: fline_line_t);         {line to set char position before start of}
+  val_param;
+
+var
+  sub_p: fline_hier_p_t;               {pointer to new subordinate level}
+
+begin
+  fline_hier_new_line (fl, hier_p, sub_p, line); {create the new subordinate level}
+  hier_p := sub_p;                     {return pointer to the new level}
   end;
 {
 ********************************************************************************
@@ -118,31 +186,6 @@ begin
 {
 ********************************************************************************
 *
-*   Subroutine FLINE_HIER_PUSH (FL, HIER_P, COLL)
-*
-*   Create a new subordinate hierarchy level, connected to the collection COLL.
-*   HIER_P points to the parent hierarchy level on entry, and is returned
-*   pointing to the newly-created child level.  The position will be before the
-*   start of COLL.
-}
-procedure fline_hier_push (            {new hierarchy level, connect to collection}
-  in out  fl: fline_t;                 {FLINE library use state}
-  in out  hier_p: fline_hier_p_t;      {pnt to curr level, will point to child}
-  in var  coll: fline_coll_t);         {collection to read at the new level}
-  val_param;
-
-var
-  sub_p: fline_hier_p_t;               {pointer to new subordinate level}
-
-begin
-  if hier_p = nil then return;         {no existing level, nothing to do ?}
-
-  fline_hier_new_coll (fl, hier_p, sub_p, coll); {create the new subordinate level}
-  hier_p := sub_p;                     {return pointer to the new level}
-  end;
-{
-********************************************************************************
-*
 *   Subroutine FLINE_HIER_PUSH_FILE (FL, HIER_P, FNAM, STAT)
 *
 *   Create a new subordinate hierarchy level, connected to the lines of the file
@@ -172,7 +215,7 @@ begin
     stat);
   if sys_error(stat) then return;
 
-  fline_hier_push (fl, hier_p, coll_p^); {create subordinate level for the file lines}
+  fline_hier_push_coll (fl, hier_p, coll_p^); {create subordinate level for the file lines}
   end;
 {
 ********************************************************************************

@@ -102,7 +102,7 @@ procedure fline_block_new_copy (       {start hier block, copy original position
 procedure fline_block_new_line (       {start hier block at specific line}
   in out  fl: fline_t;                 {FLINE library use state}
   in      parent_p: fline_hier_p_t;    {pointer to parent hiearchy level, NIL create top}
-  in var  line: fline_line_t;          {position will be at start of this line}
+  in var  line: fline_line_t;          {position will be before start of this line}
   out     hier_p: fline_hier_p_t);     {returned pointer to new hier level}
   val_param; extern;
 
@@ -194,7 +194,7 @@ procedure fline_cpos_init (            {init character position to default or be
 
 procedure fline_cpos_line (            {set character position to before a line}
   in out  cpos: fline_cpos_t;          {character position to set}
-  in var  line: fline_line_t);         {line to set char position to start of}
+  in var  line: fline_line_t);         {line to set char position before start of}
   val_param; extern;
 
 procedure fline_cpos_getnext_line (    {advance to next input line in coll, return line}
@@ -299,6 +299,13 @@ procedure fline_hier_new_coll (        {create new hierarchy level}
   in var  coll: fline_coll_t);         {collection of lines new level will refer to}
   val_param; extern;
 
+procedure fline_hier_new_line (        {create new hierarchy level}
+  in out  fl: fline_t;                 {FLINE library use state}
+  in      parent_p: fline_hier_p_t;    {points to parent hierarchy level, if any}
+  out     hier_p: fline_hier_p_t;      {returned pointing to new hierarchy level}
+  in var  line: fline_line_t);         {line to set char position before start of}
+  val_param; extern;
+
 function fline_hier_nextline (         {to next line in current hierarchy level}
   in out  fl: fline_t;                 {FLINE library use state}
   in out  hier_p: fline_hier_p_t)      {pointer to position within hierarcy, may be updated}
@@ -310,10 +317,16 @@ procedure fline_hier_pop (             {pop back to previous hier level, delete 
   in out  hier_p: fline_hier_p_t);     {will point to parent, NIL when popped top level}
   val_param; extern;
 
-procedure fline_hier_push (            {new hierarchy level, connect to collection}
+procedure fline_hier_push_coll (       {new hierarchy level, connect to collection}
   in out  fl: fline_t;                 {FLINE library use state}
   in out  hier_p: fline_hier_p_t;      {pnt to curr level, will point to child}
   in var  coll: fline_coll_t);         {collection to read at the new level}
+  val_param; extern;
+
+procedure fline_hier_push_line (       {new hierarchy level, to before start of a line}
+  in out  fl: fline_t;                 {FLINE library use state}
+  in out  hier_p: fline_hier_p_t;      {pnt to curr level, will point to child}
+  in var  line: fline_line_t);         {line to set char position before start of}
   val_param; extern;
 
 procedure fline_hier_push_file (       {new hierarchy level, connect to coll of a file}
