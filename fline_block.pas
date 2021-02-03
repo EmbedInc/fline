@@ -8,6 +8,9 @@ define fline_block_new_line;
 define fline_block_pop;
 define fline_block_delete;
 define fline_block_level;
+define fline_block_nextline;
+define fline_block_getnext_line;
+define fline_block_getnext_str;
 %include 'fline2.ins.pas';
 {
 ********************************************************************************
@@ -127,16 +130,96 @@ begin
 {
 ********************************************************************************
 *
-*   Function FLINE_BLOCK_LEVEL (HIER)
+*   Function FLINE_BLOCK_LEVEL (HIER_P)
 *
 *   Get the nesting level within the current block.  The top hierarchy level of
 *   a block is at nesting level 0.
 }
 function fline_block_level (           {get nesting level within current block}
-  in      hier: fline_hier_t)          {hierarchy level inquiring about}
-  :sys_int_machine_t;                  {level within block, 0 = top of block}
+  in      hier_p: fline_hier_p_t)      {pointer to hiearchy level inquiring about}
+  :sys_int_machine_t;                  {nesting level, 0 at block top, -1 for no hierarchy}
   val_param;
 
 begin
-  fline_block_level := hier.blklev;
+  if hier_p = nil then begin
+    fline_block_level := -1;
+    return;
+    end;
+
+  fline_block_level := hier_p^.blklev;
+  end;
+{
+********************************************************************************
+*
+*   Function FLINE_BLOCK_NEXTLINE (FL, HIER_P)
+*
+*   Advance to the next line in the current block.  The function returns TRUE
+*   when this is done successfully, and FALSE when the end of the input for the
+*   block is reached.  Hierarchy levels are automatically popped and HIER_P
+*   updated accordingly when the ends of collections are reached.
+}
+function fline_block_nextline (        {to next line in current block}
+  in out  fl: fline_t;                 {FLINE library use state}
+  in out  hier_p: fline_hier_p_t)      {pointer to position within hierarcy, may be updated}
+  :boolean;                            {TRUE: advanced, not hit end of block}
+  val_param;
+
+begin
+  fline_block_nextline := false;       {init to end of block was reached}
+
+  while true do begin                  {pop up as necessary to find next input line}
+    if hier_p = nil then return;       {nothing left to read ?}
+    if fline_cpos_nextline (hier_p^.cpos) then begin {went to new line in this collection ?}
+      fline_block_nextline := true;    {indicate at a new line}
+      return;
+      end;
+    if hier_p^.blklev = 0 then return; {reached end of input this block }
+    fline_hier_pop (fl, hier_p);       {pop this collection, up to parent}
+    end;                               {back to try again at this new level}
+  end;
+{
+********************************************************************************
+*
+*   Subroutine FLINE_BLOCK_GETNEXT_LINE (FL, HIER_P, LINE_P)
+*
+*   Advance to the next line in the current block, and return LINE_P pointing to
+*   that line.  Hierarchy levels are automatically popped and HIER_P updated
+*   accordingly when the ends of collections are reached.
+}
+procedure fline_block_getnext_line (   {advance to next input line in block, return line}
+  in out  fl: fline_t;                 {FLINE library use state}
+  in out  hier_p: fline_hier_p_t;      {pointer to position within hierarcy, may be updated}
+  out     line_p: fline_line_p_t);     {pointer to line, NIL if hit end of block}
+  val_param;
+
+begin
+  if fline_block_nextline (fl, hier_p) then begin {went to a new line ?}
+    line_p := hier_p^.cpos.line_p;     {return pointer to the new line}
+    return;
+    end;
+  line_p := nil;                       {no new line to go to}
+  end;
+{
+********************************************************************************
+*
+*   Subroutine FLINE_BLOCK_GETNEXT_STR (FL, HIER_P, STR_P)
+*
+*   Advance to the next line in the current block, and return STR_P pointing to
+*   the text of that line.  Hierarchy levels are automatically popped and HIER_P
+*   updated accordingly when the ends of collections are reached.
+}
+procedure fline_block_getnext_str (    {advance to next input line in block, return string}
+  in out  fl: fline_t;                 {FLINE library use state}
+  in out  hier_p: fline_hier_p_t;      {pointer to position within hierarcy, may be updated}
+  out     str_p: string_var_p_t);      {pointer to string, NIL if hit end of block}
+  val_param;
+
+begin
+  str_p := nil;                        {init to no text available}
+
+  if fline_block_nextline (fl, hier_p) then begin {went to a new line ?}
+    if hier_p^.cpos.line_p = nil then return; {no current line (shouldn't happen) ?}
+    str_p := hier_p^.cpos.line_p^.str_p; {return pointer to text of new line}
+    return;
+    end;
   end;

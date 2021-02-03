@@ -56,7 +56,7 @@ fline_colltyp_virt_k: (                {virtual file, ref only, doesn't contain 
   fline_cpos_p_t = ^fline_cpos_t;
   fline_cpos_t = record                {character position within line}
     coll_p: fline_coll_p_t;            {pointer to collection line is within}
-    line_p: fline_line_p_t;            {line containing the character, NIL before first}
+    line_p: fline_line_p_t;            {line containing the character, NIL at end}
     ind: sys_int_machine_t;            {1-N char index, 0 before, len+1 after}
     end;
 
@@ -81,6 +81,18 @@ procedure fline_block_delete (         {delete entire current block}
   in out  hier_p: fline_hier_p_t);     {ret first lev above block, NIL deleted top block}
   val_param; extern;
 
+procedure fline_block_getnext_line (   {advance to next input line in block, return line}
+  in out  fl: fline_t;                 {FLINE library use state}
+  in out  hier_p: fline_hier_p_t;      {pointer to position within hierarcy, may be updated}
+  out     line_p: fline_line_p_t);     {pointer to line, NIL if hit end of block}
+  val_param; extern;
+
+procedure fline_block_getnext_str (    {advance to next input line in block, return string}
+  in out  fl: fline_t;                 {FLINE library use state}
+  in out  hier_p: fline_hier_p_t;      {pointer to position within hierarcy, may be updated}
+  out     str_p: string_var_p_t);      {pointer to string, NIL if hit end of block}
+  val_param; extern;
+
 procedure fline_block_new_copy (       {start hier block, copy original position}
   in out  fl: fline_t;                 {FLINE library use state}
   in var  parent: fline_hier_t;        {hierarchy position to make copy of}
@@ -94,9 +106,15 @@ procedure fline_block_new_line (       {start hier block at specific line}
   out     hier_p: fline_hier_p_t);     {returned pointer to new hier level}
   val_param; extern;
 
+function fline_block_nextline (        {to next line in current block}
+  in out  fl: fline_t;                 {FLINE library use state}
+  in out  hier_p: fline_hier_p_t)      {pointer to position within hierarcy, may be updated}
+  :boolean;                            {TRUE: advanced, not hit end of block}
+  val_param; extern;
+
 function fline_block_level (           {get nesting level within current block}
-  in      hier: fline_hier_t)          {hierarchy level inquiring about}
-  :sys_int_machine_t;                  {level within block, 0 = top of block}
+  in      hier_p: fline_hier_p_t)      {pointer to hiearchy level inquiring about}
+  :sys_int_machine_t;                  {nesting level, 0 at block top, -1 for no hierarchy}
   val_param; extern;
 
 procedure fline_block_pop (            {pop back one level within hierarchy block}
@@ -160,7 +178,7 @@ procedure fline_coll_new_virt (        {create new empty collection, type VIRT}
   out     coll_p: fline_coll_p_t);     {returned pointer to the new collection}
   val_param; extern;
 
-procedure fline_cpos_coll (            {set char position to start of collection}
+procedure fline_cpos_coll (            {set char position to before collection}
   out     cpos: fline_cpos_t;          {updated character position}
   in var  coll: fline_coll_t);         {the collection of lines}
   val_param; extern;
@@ -174,9 +192,19 @@ procedure fline_cpos_init (            {init character position to default or be
   in out  cpos: fline_cpos_t);         {character position to initialize}
   val_param; extern;
 
-procedure fline_cpos_line (            {set character position to start of a line}
+procedure fline_cpos_line (            {set character position to before a line}
   in out  cpos: fline_cpos_t;          {character position to set}
   in var  line: fline_line_t);         {line to set char position to start of}
+  val_param; extern;
+
+procedure fline_cpos_getnext_line (    {advance to next input line in coll, return line}
+  in out  cpos: fline_cpos_t;          {character position, updated}
+  out     line_p: fline_line_p_t);     {pointer to line, NIL if hit end of collection}
+  val_param; extern;
+
+procedure fline_cpos_getnext_str (     {advance to next input line in coll, return string}
+  in out  cpos: fline_cpos_t;          {character position, updated}
+  out     str_p: string_var_p_t);      {pointer to string, NIL if hit end of collection}
   val_param; extern;
 
 function fline_cpos_nextline (         {advance to next line in collection of lines}
@@ -216,9 +244,21 @@ procedure fline_hier_delete (          {delete whole hierarchy}
   in out  hier_p: fline_hier_p_t);     {delete this level and all parents, returned NIL}
   val_param; extern;
 
+procedure fline_hier_getnext_line (    {advance to next input line in hier, return line}
+  in out  fl: fline_t;                 {FLINE library use state}
+  in out  hier_p: fline_hier_p_t;      {pointer to position within hierarcy, may be updated}
+  out     line_p: fline_line_p_t);     {pointer to line, NIL if hit end of all input}
+  val_param; extern;
+
+procedure fline_hier_getnext_str (     {advance to next input line in hier, return string}
+  in out  fl: fline_t;                 {FLINE library use state}
+  in out  hier_p: fline_hier_p_t;      {pointer to position within hierarcy, may be updated}
+  out     str_p: string_var_p_t);      {pointer to string, NIL if hit end of all input}
+  val_param; extern;
+
 function fline_hier_level (            {get hierarchy level}
-  in      hier: fline_hier_t)          {descriptor for the hierarchy level}
-  :sys_int_machine_t;                  {nesting level, 0 at top}
+  in      hier_p: fline_hier_p_t)      {pointer to hiearchy level inquiring about}
+  :sys_int_machine_t;                  {nesting level, 0 at top, -1 for no hierarchy}
   val_param; extern;
 
 procedure fline_hier_line (            {get pointer to current line at a hier level}
@@ -226,9 +266,9 @@ procedure fline_hier_line (            {get pointer to current line at a hier le
   out     line_p: fline_line_p_t);     {pointer to the line, NIL if before first}
   val_param; extern;
 
-procedure fline_hier_linenx (          {get pointer to next line at a hier level}
+procedure fline_hier_linenx (          {get pointer to next line, don't change position}
   in      hier: fline_hier_t;          {descriptor for the hierarchy level}
-  out     line_p: fline_line_p_t);     {pointer to the next line, NIL if before first}
+  out     line_p: fline_line_p_t);     {pointer to the next line, NIL if end of all input}
   val_param; extern;
 
 procedure fline_hier_line_str (        {get current line string at a hier level}
@@ -260,8 +300,9 @@ procedure fline_hier_new_coll (        {create new hierarchy level}
   val_param; extern;
 
 function fline_hier_nextline (         {to next line in current hierarchy level}
-  in out  hier: fline_hier_t)          {position within hierarchy, updated to start of next line}
-  :boolean;                            {TRUE: advanced, not hit end of collection}
+  in out  fl: fline_t;                 {FLINE library use state}
+  in out  hier_p: fline_hier_p_t)      {pointer to position within hierarcy, may be updated}
+  :boolean;                            {TRUE: advanced, not hit end of all input}
   val_param; extern;
 
 procedure fline_hier_pop (             {pop back to previous hier level, delete old}
