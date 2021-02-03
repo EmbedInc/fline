@@ -25,18 +25,18 @@ define fline_block_getnext_str;
 }
 procedure fline_block_new (            {create new blank start of block hier level}
   in out  fl: fline_t;                 {FLINE library use state}
-  in var  parent: fline_hier_t;        {parent hierarchy level}
+  in out  parent_p: fline_hier_p_t;    {pointer to parent hiearchy level, NIL create top}
   out     hier_p: fline_hier_p_t);     {returned pointer to new hier level, CPOS not filled in}
   val_param;
 
 begin
-  fline_hier_new (fl, addr(parent), hier_p); {create new blank hiearchy level}
+  fline_hier_new (fl, parent_p, hier_p); {create new blank hiearchy level}
   hier_p^.blklev := 0;                 {this level is at top of new block}
   end;
 {
 ********************************************************************************
 *
-*   Subroutine FLINE_BLOCK_NEW_COPY (FL, PARENT, HIER_P)
+*   Subroutine FLINE_BLOCK_NEW_COPY (FL, PARENT_P, HIER_P)
 *
 *   Start a new hiearchy block.  The current character position will be copied
 *   from the parent.  HIER_P is returned pointing to the new hiearchy
@@ -44,29 +44,31 @@ begin
 }
 procedure fline_block_new_copy (       {start hier block, copy original position}
   in out  fl: fline_t;                 {FLINE library use state}
-  in var  parent: fline_hier_t;        {hierarchy position to make copy of}
+  in out  parent_p: fline_hier_p_t;    {pointer to parent hiearchy level, NIL create top}
   out     hier_p: fline_hier_p_t);     {returned pointer to new hier level}
   val_param;
 
 begin
   fline_block_new (                    {create the new descriptor}
     fl,                                {library use state}
-    parent,                            {parent hierarchy level}
+    parent_p,                          {parent hierarchy level}
     hier_p);                           {returned pointer to top of new block}
 
-  hier_p^.cpos := parent.cpos;         {init character position same as parent}
+  if parent_p <> nil then begin
+    hier_p^.cpos := parent_p^.cpos;    {init character position same as parent}
+    end;
   end;
 {
 ********************************************************************************
 *
-*   Subroutine FLINE_BLOCK_NEW_LINE (FL, PARENT, LINE, HIER_P)
+*   Subroutine FLINE_BLOCK_NEW_LINE (FL, PARENT_P, LINE, HIER_P)
 *
 *   Start a new hiearchy block.  The character position will be the start of the
 *   line LINE.
 }
 procedure fline_block_new_line (       {start hier block at specific line}
   in out  fl: fline_t;                 {FLINE library use state}
-  in var  parent: fline_hier_t;        {parent hierarchy position}
+  in out  parent_p: fline_hier_p_t;    {pointer to parent hiearchy level, NIL create top}
   in var  line: fline_line_t;          {position will be at start of this line}
   out     hier_p: fline_hier_p_t);     {returned pointer to new hier level}
   val_param;
@@ -74,7 +76,7 @@ procedure fline_block_new_line (       {start hier block at specific line}
 begin
   fline_block_new (                    {create the new descriptor}
     fl,                                {library use state}
-    parent,                            {parent hierarchy level}
+    parent_p,                          {parent hierarchy level}
     hier_p);                           {returned pointer to top of new block}
 
   fline_cpos_line (hier_p^.cpos, line); {set char position to start of this line}

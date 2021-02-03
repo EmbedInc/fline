@@ -95,13 +95,13 @@ procedure fline_block_getnext_str (    {advance to next input line in block, ret
 
 procedure fline_block_new_copy (       {start hier block, copy original position}
   in out  fl: fline_t;                 {FLINE library use state}
-  in var  parent: fline_hier_t;        {hierarchy position to make copy of}
+  in out  parent_p: fline_hier_p_t;    {pointer to parent hiearchy level, NIL create top}
   out     hier_p: fline_hier_p_t);     {returned pointer to new hier level}
   val_param; extern;
 
 procedure fline_block_new_line (       {start hier block at specific line}
   in out  fl: fline_t;                 {FLINE library use state}
-  in var  parent: fline_hier_t;        {parent hierarchy position}
+  in out  parent_p: fline_hier_p_t;    {pointer to parent hiearchy level, NIL create top}
   in var  line: fline_line_t;          {position will be at start of this line}
   out     hier_p: fline_hier_p_t);     {returned pointer to new hier level}
   val_param; extern;
