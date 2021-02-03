@@ -4,6 +4,10 @@ module fline_line;
 define fline_line_add_end;
 define fline_line_virt;
 define fline_line_virt_last;
+define fline_line_lnum;
+define fline_line_lnum_virt;
+define fline_line_name;
+define fline_line_name_virt;
 %include 'fline2.ins.pas';
 {
 ********************************************************************************
@@ -93,4 +97,86 @@ procedure fline_line_virt_last (       {add virtual ref to last line of collecti
 begin
   if coll.last_p = nil then return;    {there is no last line, nothing to do ?}
   fline_line_virt (coll.last_p^, vcoll, lnum);
+  end;
+{
+********************************************************************************
+*
+*   Function FLINE_LINE_LNUM (LINE)
+*
+*   Get the line number of the line LINE.
+}
+function fline_line_lnum (             {get number of a line within collection}
+  in out  line: fline_line_t)          {the line inquiring about}
+  :sys_int_machine_t;                  {1-N line number, 0 before start}
+  val_param;
+
+begin
+  fline_line_lnum := line.lnum;
+  end;
+{
+********************************************************************************
+*
+*   Function FLINE_LINE_LNUM_VIRT (LINE)
+*
+*   Get the virtual line number of the line LINE.  If there is no virtual
+*   location defined for this line, then the real line number is returned.
+}
+function fline_line_lnum_virt (        {get number of a line within virtual collection}
+  in out  line: fline_line_t)          {the line inquiring about}
+  :sys_int_machine_t;                  {1-N line number, 0 before start}
+  val_param;
+
+begin
+  if line.virt_p <> nil then begin     {there is a vitual line ?}
+    fline_line_lnum_virt := line.virt_p^.lnum; {get virtual line number}
+    return;
+    end;
+
+  fline_line_lnum_virt := line.lnum;   {get the real line number}
+  end;
+{
+********************************************************************************
+*
+*   Subroutine FLINE_LINE_NAME (LINE, NAME_P)
+*
+*   Get the name of the collection containing the line LINE.  NAME_P is returned
+*   pointing to the name.
+}
+procedure fline_line_name (            {get name of collection that line is in}
+  in out  line: fline_line_t;          {the line inquiring about}
+  out     name_p: string_var_p_t);     {returned pointing to collection name}
+  val_param;
+
+begin
+  name_p := nil;                       {init to no name available}
+  if line.coll_p = nil then return;    {no collection indicated ?}
+  name_p := line.coll_p^.name_p;       {return pointer to collection name}
+  end;
+{
+********************************************************************************
+*
+*   Subroutine FLINE_LINE_NAME_VIRT (LINE, NAME_P)
+*
+*   Get the name of the virtual collection the line LINE is within.  NAME_P is
+*   returned pointing to the name.  If there is no virtual location defined for
+*   the line, then the name of the real collection is returned.
+}
+procedure fline_line_name_virt (       {get name of virtual collection that line is in}
+  in out  line: fline_line_t;          {the line inquiring about}
+  out     name_p: string_var_p_t);     {returned pointing to collection name}
+  val_param;
+
+begin
+  name_p := nil;                       {init to no name available}
+  if                                   {virtual name is available ?}
+      (line.virt_p <> nil) and then    {virtual location exists ?}
+      (line.virt_p^.coll_p <> nil) and then {virtual collection is known ?}
+      (line.virt_p^.coll_p^.name_p <> nil) {the virtual collection has a name ?}
+      then begin
+    name_p := line.virt_p^.coll_p^.name_p; {return the virtual collection name}
+    return;
+    end;
+
+  if line.coll_p = nil then return;    {no real collection indicated ?}
+  name_p := line.coll_p^.name_p;       {return pointer to real collection name}
   end;

@@ -352,6 +352,26 @@ procedure fline_line_add_end (         {add line to end of collection}
   in      str: univ string_var_arg_t); {text string to add as a new line}
   val_param; extern;
 
+function fline_line_lnum (             {get number of a line within collection}
+  in out  line: fline_line_t)          {the line inquiring about}
+  :sys_int_machine_t;                  {1-N line number, 0 before start}
+  val_param; extern;
+
+function fline_line_lnum_virt (        {get number of a line within virtual collection}
+  in out  line: fline_line_t)          {the line inquiring about}
+  :sys_int_machine_t;                  {1-N line number, 0 before start}
+  val_param; extern;
+
+procedure fline_line_name (            {get name of collection that line is in}
+  in out  line: fline_line_t;          {the line inquiring about}
+  out     name_p: string_var_p_t);     {returned pointing to collection name}
+  val_param; extern;
+
+procedure fline_line_name_virt (       {get name of virtual collection that line is in}
+  in out  line: fline_line_t;          {the line inquiring about}
+  out     name_p: string_var_p_t);     {returned pointing to collection name}
+  val_param; extern;
+
 procedure fline_line_virt (            {add virtual reference to existing line}
   in out  line: fline_line_t;          {the line to add virtual reference to}
   in out  vcoll: fline_coll_t;         {collection being virtually referenced}
