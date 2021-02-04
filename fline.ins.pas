@@ -153,6 +153,11 @@ procedure fline_coll_find_virt (       {find existing VIRT collection}
   out     coll_p: fline_coll_p_t);     {pointer to collection, NIL not found}
   val_param; extern;
 
+procedure fline_coll_line_first (      {get pointer to first line of collection}
+  in      coll: fline_coll_t;          {the collection inquiring about}
+  out     line_p: fline_line_p_t);     {returned pointer to first line, NIL if no lines}
+  val_param; extern;
+
 procedure fline_coll_new (             {create new empty collection}
   in out  fl: fline_t;                 {FLINE library use state}
   in      name: string_var_arg_t;      {collection name}

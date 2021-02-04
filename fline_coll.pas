@@ -9,6 +9,7 @@ define fline_coll_find;
 define fline_coll_find_file;
 define fline_coll_find_lmem;
 define fline_coll_find_virt;
+define fline_coll_line_first;
 %include 'fline2.ins.pas';
 {
 ********************************************************************************
@@ -193,4 +194,20 @@ procedure fline_coll_find_virt (       {find existing VIRT collection}
 
 begin
   fline_coll_find (fl, name, fline_colltyp_virt_k, coll_p);
+  end;
+{
+********************************************************************************
+*
+*   Subroutine FLINE_COLL_LINE_FIRST (COLL, LINE_P)
+*
+*   Set LINE_P pointing to the first line of the collection COLL.  LINE_P is set
+*   to NIL when the collection has no lines.
+}
+procedure fline_coll_line_first (      {get pointer to first line of collection}
+  in      coll: fline_coll_t;          {the collection inquiring about}
+  out     line_p: fline_line_p_t);     {returned pointer to first line, NIL if no lines}
+  val_param;
+
+begin
+  line_p := coll.first_p;
   end;
