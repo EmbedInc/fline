@@ -259,6 +259,21 @@ procedure fline_hier_delete (          {delete whole hierarchy}
   in out  hier_p: fline_hier_p_t);     {delete this level and all parents, returned NIL}
   val_param; extern;
 
+procedure fline_hier_get_line (        {get pointer to current line}
+  in      hier: fline_hier_t;          {descriptor for the hierarchy level}
+  out     line_p: fline_line_p_t);     {pointer to the line, NIL if before first}
+  val_param; extern;
+
+procedure fline_hier_get_linenx (      {get pointer to next line, don't change position}
+  in      hier: fline_hier_t;          {descriptor for the hierarchy level}
+  out     line_p: fline_line_p_t);     {pointer to the next line, NIL if end of all input}
+  val_param; extern;
+
+procedure fline_hier_get_str (         {get pointer to current line string}
+  in      hier: fline_hier_t;          {descriptor for the hierarchy level}
+  out     str_p: string_var_p_t);      {pointer to line string, NIL if before first}
+  val_param; extern;
+
 procedure fline_hier_getnext_line (    {advance to next input line in hier, return line}
   in out  fl: fline_t;                 {FLINE library use state}
   in out  hier_p: fline_hier_p_t;      {pointer to position within hierarcy, may be updated}
@@ -274,21 +289,6 @@ procedure fline_hier_getnext_str (     {advance to next input line in hier, retu
 function fline_hier_level (            {get hierarchy level}
   in      hier_p: fline_hier_p_t)      {pointer to hiearchy level inquiring about}
   :sys_int_machine_t;                  {nesting level, 0 at top, -1 for no hierarchy}
-  val_param; extern;
-
-procedure fline_hier_get_line (        {get pointer to current line}
-  in      hier: fline_hier_t;          {descriptor for the hierarchy level}
-  out     line_p: fline_line_p_t);     {pointer to the line, NIL if before first}
-  val_param; extern;
-
-procedure fline_hier_get_linenx (      {get pointer to next line, don't change position}
-  in      hier: fline_hier_t;          {descriptor for the hierarchy level}
-  out     line_p: fline_line_p_t);     {pointer to the next line, NIL if end of all input}
-  val_param; extern;
-
-procedure fline_hier_get_str (         {get pointer to current line string}
-  in      hier: fline_hier_t;          {descriptor for the hierarchy level}
-  out     str_p: string_var_p_t);      {pointer to line string, NIL if before first}
   val_param; extern;
 
 function fline_hier_lnum (             {get line number at a hier level}
