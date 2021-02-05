@@ -69,7 +69,7 @@ begin
 procedure fline_block_new_line (       {start hier block at specific line}
   in out  fl: fline_t;                 {FLINE library use state}
   in      parent_p: fline_hier_p_t;    {pointer to parent hiearchy level, NIL create top}
-  in var  line: fline_line_t;          {position will be at start of this line}
+  in var  line: fline_line_t;          {position will be before start of this line}
   out     hier_p: fline_hier_p_t);     {returned pointer to new hier level}
   val_param;
 
@@ -79,7 +79,7 @@ begin
     parent_p,                          {parent hierarchy level}
     hier_p);                           {returned pointer to top of new block}
 
-  fline_cpos_line (hier_p^.cpos, line); {set char position to start of this line}
+  fline_cpos_set_line_bef (hier_p^.cpos, line); {set char position to before this line}
   end;
 {
 ********************************************************************************

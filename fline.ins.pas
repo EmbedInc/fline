@@ -197,9 +197,19 @@ procedure fline_cpos_init (            {init character position to default or be
   in out  cpos: fline_cpos_t);         {character position to initialize}
   val_param; extern;
 
-procedure fline_cpos_line (            {set character position to before a line}
+procedure fline_cpos_set_line_aft (    {set character position to after end of line}
   in out  cpos: fline_cpos_t;          {character position to set}
-  in var  line: fline_line_t);         {line to set char position before start of}
+  in var  line: fline_line_t);         {line to set position to}
+  val_param; extern;
+
+procedure fline_cpos_set_line_at (     {set character position to start of line}
+  in out  cpos: fline_cpos_t;          {character position to set}
+  in var  line: fline_line_t);         {line to set position to}
+  val_param; extern;
+
+procedure fline_cpos_set_line_bef (    {set character position to before line}
+  in out  cpos: fline_cpos_t;          {character position to set}
+  in var  line: fline_line_t);         {line to set position to}
   val_param; extern;
 
 procedure fline_cpos_getnext_line (    {advance to next input line in coll, return line}
@@ -266,17 +276,17 @@ function fline_hier_level (            {get hierarchy level}
   :sys_int_machine_t;                  {nesting level, 0 at top, -1 for no hierarchy}
   val_param; extern;
 
-procedure fline_hier_line (            {get pointer to current line at a hier level}
+procedure fline_hier_get_line (        {get pointer to current line}
   in      hier: fline_hier_t;          {descriptor for the hierarchy level}
   out     line_p: fline_line_p_t);     {pointer to the line, NIL if before first}
   val_param; extern;
 
-procedure fline_hier_linenx (          {get pointer to next line, don't change position}
+procedure fline_hier_get_linenx (      {get pointer to next line, don't change position}
   in      hier: fline_hier_t;          {descriptor for the hierarchy level}
   out     line_p: fline_line_p_t);     {pointer to the next line, NIL if end of all input}
   val_param; extern;
 
-procedure fline_hier_line_str (        {get current line string at a hier level}
+procedure fline_hier_get_str (         {get pointer to current line string}
   in      hier: fline_hier_t;          {descriptor for the hierarchy level}
   out     str_p: string_var_p_t);      {pointer to line string, NIL if before first}
   val_param; extern;
@@ -339,6 +349,24 @@ procedure fline_hier_push_file (       {new hierarchy level, connect to coll of 
   in out  hier_p: fline_hier_p_t;      {pnt to curr level, will point to child}
   in      fnam: univ string_var_arg_t; {name of file to read at the new level}
   out     stat: sys_err_t);            {completion status}
+  val_param; extern;
+
+procedure fline_hier_set_line_aft (    {set position to immediately after a line}
+  in out  fl: fline_t;                 {FLINE library use state}
+  in out  hier_p: fline_hier_p_t;      {hier level to set, created when NIL}
+  in var  line: fline_line_t);         {line to set position to}
+  val_param; extern;
+
+procedure fline_hier_set_line_at (     {set position to start of a line}
+  in out  fl: fline_t;                 {FLINE library use state}
+  in out  hier_p: fline_hier_p_t;      {hier level to set, created when NIL}
+  in var  line: fline_line_t);         {line to set position to}
+  val_param; extern;
+
+procedure fline_hier_set_line_bef (    {set position to immediately before a line}
+  in out  fl: fline_t;                 {FLINE library use state}
+  in out  hier_p: fline_hier_p_t;      {hier level to set, created when NIL}
+  in var  line: fline_line_t);         {line to set position to}
   val_param; extern;
 
 procedure fline_lib_end (              {end a use of the FLINE library}

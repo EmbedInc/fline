@@ -11,13 +11,16 @@ define fline_hier_pop;
 define fline_hier_level;
 define fline_hier_name;
 define fline_hier_lnum;
-define fline_hier_line;
-define fline_hier_linenx;
-define fline_hier_line_str;
+define fline_hier_get_line;
+define fline_hier_get_linenx;
+define fline_hier_get_str;
 define fline_hier_char;
 define fline_hier_nextline;
 define fline_hier_getnext_line;
 define fline_hier_getnext_str;
+define fline_hier_set_line_bef;
+define fline_hier_set_line_at;
+define fline_hier_set_line_aft;
 %include 'fline2.ins.pas';
 {
 ********************************************************************************
@@ -99,7 +102,7 @@ procedure fline_hier_new_line (        {create new hierarchy level}
 
 begin
   fline_hier_new (fl, parent_p, hier_p); {create new hier descriptor}
-  fline_cpos_line (hier_p^.cpos, line); {init char pos to before start of collection}
+  fline_cpos_set_line_bef (hier_p^.cpos, line); {init char pos to before start of line}
   end;
 {
 ********************************************************************************
@@ -301,12 +304,12 @@ begin
 {
 ********************************************************************************
 *
-*   Subroutine FLINE_HIER_LINE (HIER, LINE_P)
+*   Subroutine FLINE_HIER_GET_LINE (HIER, LINE_P)
 *
 *   Get the pointer to the current line at the hierarchy level HIER.  LINE_P is
 *   returned NIL if the position is before the start of the collection.
 }
-procedure fline_hier_line (            {get pointer to current line at a hier level}
+procedure fline_hier_get_line (        {get pointer to current line}
   in      hier: fline_hier_t;          {descriptor for the hierarchy level}
   out     line_p: fline_line_p_t);     {pointer to the line, NIL if before first}
   val_param;
@@ -317,14 +320,14 @@ begin
 {
 ********************************************************************************
 *
-*   Subroutine FLINE_HIER_LINENX (HIER, LINE_P)
+*   Subroutine FLINE_HIER_GET_LINENX (HIER, LINE_P)
 *
 *   Get the pointer to the next line at the hierarchy level HIER.  LINE_P is
 *   returned NIL if the position is before the start of the collection.
 }
-procedure fline_hier_linenx (          {get pointer to next line at a hier level}
+procedure fline_hier_get_linenx (      {get pointer to next line, don't change position}
   in      hier: fline_hier_t;          {descriptor for the hierarchy level}
-  out     line_p: fline_line_p_t);     {pointer to the next line, NIL if before first}
+  out     line_p: fline_line_p_t);     {pointer to the next line, NIL if end of all input}
   val_param;
 
 begin
@@ -340,13 +343,13 @@ begin
 {
 ********************************************************************************
 *
-*   Subroutine FLINE_HIER_LINE_STR (HIER, STR_P)
+*   Subroutine FLINE_HIER_GET_STR (HIER, STR_P)
 *
 *   Set STR_P pointing to the text string for the current line of the hierarchy
 *   level HIER.  STR_P is returned NIL when the position is before the start of
 *   the collection of lines.
 }
-procedure fline_hier_line_str (        {get current line string at a hier level}
+procedure fline_hier_get_str (         {get pointer to current line string}
   in      hier: fline_hier_t;          {descriptor for the hierarchy level}
   out     str_p: string_var_p_t);      {pointer to line string, NIL if before first}
   val_param;
@@ -454,4 +457,76 @@ begin
     str_p := hier_p^.cpos.line_p^.str_p; {return pointer to text of new line}
     return;
     end;
+  end;
+{
+********************************************************************************
+*
+*   Subroutine FLINE_HIER_SET_LINE_BEF (FL, HIER_P, LINE)
+*
+*   Set the hierchy descriptor at HIER_P to the position immediately before the
+*   start of the line LINE.  The existing position is overwritten and lost.
+*
+*   HIER_P can be NIL on entry.  If so, a new hierarchy is created and HIER_P
+*   will be returned to the top (and only) level of the new hierarchy.
+}
+procedure fline_hier_set_line_bef (    {set position to immediately before a line}
+  in out  fl: fline_t;                 {FLINE library use state}
+  in out  hier_p: fline_hier_p_t;      {hier level to set, created when NIL}
+  in var  line: fline_line_t);         {line to set position to}
+  val_param;
+
+begin
+  if hier_p = nil then begin           {no hierarchy exists ?}
+    fline_hier_new (fl, nil, hier_p);  {create a new hierarchy, position not set yet}
+    end;
+
+  fline_cpos_set_line_bef (hier_p^.cpos, line); {got to before start of line}
+  end;
+{
+********************************************************************************
+*
+*   Subroutine FLINE_HIER_SET_LINE_AT (FL, HIER_P, LINE)
+*
+*   Set the hierchy descriptor at HIER_P position to the start of the line LINE.
+*   The existing position is overwritten and lost.
+*
+*   HIER_P can be NIL on entry.  If so, a new hierarchy is created and HIER_P
+*   will be returned to the top (and only) level of the new hierarchy.
+}
+procedure fline_hier_set_line_at (     {set position to start of a line}
+  in out  fl: fline_t;                 {FLINE library use state}
+  in out  hier_p: fline_hier_p_t;      {hier level to set, created when NIL}
+  in var  line: fline_line_t);         {line to set position to}
+  val_param;
+
+begin
+  if hier_p = nil then begin           {no hierarchy exists ?}
+    fline_hier_new (fl, nil, hier_p);  {create a new hierarchy, position not set yet}
+    end;
+
+  fline_cpos_set_line_at (hier_p^.cpos, line); {got to start of line}
+  end;
+{
+********************************************************************************
+*
+*   Subroutine FLINE_HIER_SET_LINE_AFT (FL, HIER_P, LINE)
+*
+*   Set the hierchy descriptor at HIER_P to the position immediately after the
+*   end of the line LINE.  The existing position is overwritten and lost.
+*
+*   HIER_P can be NIL on entry.  If so, a new hierarchy is created and HIER_P
+*   will be returned to the top (and only) level of the new hierarchy.
+}
+procedure fline_hier_set_line_aft (    {set position to immediately after a line}
+  in out  fl: fline_t;                 {FLINE library use state}
+  in out  hier_p: fline_hier_p_t;      {hier level to set, created when NIL}
+  in var  line: fline_line_t);         {line to set position to}
+  val_param;
+
+begin
+  if hier_p = nil then begin           {no hierarchy exists ?}
+    fline_hier_new (fl, nil, hier_p);  {create a new hierarchy, position not set yet}
+    end;
+
+  fline_cpos_set_line_aft (hier_p^.cpos, line); {got to before start of line}
   end;
