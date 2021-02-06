@@ -21,7 +21,7 @@ define fline_coll_line_first;
 }
 procedure fline_coll_new (             {create new empty collection}
   in out  fl: fline_t;                 {FLINE library use state}
-  in      name: string_var_arg_t;      {collection name}
+  in      name: univ string_var_arg_t; {collection name}
   in      colltyp: fline_colltyp_k_t;  {type of the new collection}
   out     coll_p: fline_coll_p_t);     {pointer to new coll, type-specific not filled in}
   val_param;
