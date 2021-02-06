@@ -227,6 +227,13 @@ function fline_cpos_nextline (         {advance to next line in collection of li
   :boolean;                            {TRUE: advanced, not hit end of collection}
   val_param; extern;
 
+procedure fline_file_add_conn (        {add lines from open I/O connection}
+  in out  fl: fline_t;                 {FLINE library use state}
+  in out  conn: file_conn_t;           {I/O connection open for reading text lines}
+  in out  coll: fline_coll_t;          {collection to add lines to the end of}
+  out     stat: sys_err_t);            {completion status}
+  val_param; extern;
+
 procedure fline_file_get (             {find or create contents of a text file}
   in out  fl: fline_t;                 {FLINE library use state}
   in      fnam: univ string_var_arg_t; {file name}
