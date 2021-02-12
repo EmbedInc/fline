@@ -22,7 +22,6 @@ procedure fline_cpos_init (            {init character position to default or be
   val_param;
 
 begin
-  cpos.coll_p := nil;
   cpos.line_p := nil;
   cpos.ind := 0;
   end;
@@ -40,7 +39,6 @@ procedure fline_cpos_coll (            {set char position to before collection}
   val_param;
 
 begin
-  cpos.coll_p := addr(coll);           {save pointer to the collection}
   cpos.line_p := coll.first_p;         {init to before start of first line}
   cpos.ind := 0;
   end;
@@ -58,7 +56,6 @@ procedure fline_cpos_set_line_bef (    {set character position to before line}
   val_param;
 
 begin
-  cpos.coll_p := line.coll_p;          {point to the collection the line is in}
   cpos.line_p := addr(line);           {set pointer to the current line}
   cpos.ind := 0;                       {to before start of the line}
   end;
@@ -75,14 +72,13 @@ procedure fline_cpos_set_line_at (     {set character position to start of line}
   val_param;
 
 begin
-  cpos.coll_p := line.coll_p;          {point to the collection the line is in}
   cpos.line_p := addr(line);           {set pointer to the current line}
   cpos.ind := 1;                       {to first character of the line}
   end;
 {
 ********************************************************************************
 *
-*   Subroutine FLINE_CPOS_SET_LINE_BEF (CPOS, LINE)
+*   Subroutine FLINE_CPOS_SET_LINE_AFT (CPOS, LINE)
 *
 *   Set the character position CPOS to immediately after the end of the line
 *   LINE.
@@ -93,7 +89,6 @@ procedure fline_cpos_set_line_aft (    {set character position to after end of l
   val_param;
 
 begin
-  cpos.coll_p := line.coll_p;          {point to the collection the line is in}
   cpos.line_p := addr(line);           {set pointer to the current line}
   cpos.ind := line.str_p^.len + 1;     {to after end of line}
   end;

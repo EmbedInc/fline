@@ -12,7 +12,6 @@ define fline_hier_level;
 define fline_hier_name;
 define fline_hier_lnum;
 define fline_hier_get_line;
-define fline_hier_get_linenx;
 define fline_hier_get_str;
 define fline_hier_char;
 define fline_hier_nextline;
@@ -209,10 +208,9 @@ var
 
 begin
   sys_error_none (stat);               {init to no error encountered}
-  if hier_p = nil then return;         {no existing level, nothing to do ?}
 
   fline_file_get (                     {find or make collection for the file}
-    hier_p^.cpos.coll_p^.fline_p^,     {library use state}
+    fl,                                {library use state}
     fnam,                              {file name}
     coll_p,                            {returned pointer to file lines collection}
     stat);
@@ -247,12 +245,13 @@ begin
 {
 ********************************************************************************
 *
-*   Function FLINE_HIER_LEVEL (HIER_P)
+*   Function FLINE_HIER_LEVEL (FL, HIER_P)
 *
 *   Get the nesting level of HIER.  The top level is 0, with each child level
 *   one higher.  -1 is returned when there is no hiearchy (HIER_P is NIL).
 }
 function fline_hier_level (            {get hierarchy level}
+  in out  fl: fline_t;                 {FLINE library use state}
   in      hier_p: fline_hier_p_t)      {pointer to hiearchy level inquiring about}
   :sys_int_machine_t;                  {nesting level, 0 at top, -1 for no hierarchy}
   val_param;
@@ -267,28 +266,34 @@ begin
 {
 ********************************************************************************
 *
-*   Subroutine FLINE_HIER_NAME (HIER, NAME_P)
+*   Subroutine FLINE_HIER_NAME (FL, HIER, NAME_P)
 *
 *   Sets NAME_P pointing to the collection name for the hierarchy level HIER.
 }
-procedure fline_hier_name (            {name of collection at a hier level}
+procedure fline_hier_name (            {get name of collection at a hier level}
+  in out  fl: fline_t;                 {FLINE library use state}
   in      hier: fline_hier_t;          {descriptor for the hierarchy level}
-  out     name_p: string_var_p_t);     {returned pointer to collection name}
+  out     name_p: univ string_var_p_t); {returned pointer to collection name}
   val_param;
 
 begin
-  name_p := hier.cpos.coll_p^.name_p;  {get pointer to the collection name}
+  name_p := univ_ptr(addr(fl.nullstr)); {init to return the empty string}
+  if hier.cpos.line_p = nil then return; {no line here ?}
+  if hier.cpos.line_p^.coll_p = nil then return; {no collection ?}
+
+  name_p := hier.cpos.line_p^.coll_p^.name_p; {get pointer to the collection name}
   end;
 {
 ********************************************************************************
 *
-*   Function FLINE_HIER_LNUM (HIER)
+*   Function FLINE_HIER_LNUM (FL, HIER)
 *
 *   Get the sequential number of the current line of the hierarchy level HIER.
 *   The first line in a collection is 1.  0 is returned when the position is
 *   before the start of the collection.
 }
 function fline_hier_lnum (             {get line number at a hier level}
+  in out  fl: fline_t;                 {FLINE library use state}
   in      hier: fline_hier_t)          {descriptor for the hierarchy level}
   :sys_int_machine_t;                  {1-N line number, 0 before first}
   val_param;
@@ -316,29 +321,6 @@ procedure fline_hier_get_line (        {get pointer to current line}
 
 begin
   line_p := hier.cpos.line_p;
-  end;
-{
-********************************************************************************
-*
-*   Subroutine FLINE_HIER_GET_LINENX (HIER, LINE_P)
-*
-*   Get the pointer to the next line at the hierarchy level HIER.  LINE_P is
-*   returned NIL if the position is before the start of the collection.
-}
-procedure fline_hier_get_linenx (      {get pointer to next line, don't change position}
-  in      hier: fline_hier_t;          {descriptor for the hierarchy level}
-  out     line_p: fline_line_p_t);     {pointer to the next line, NIL if end of all input}
-  val_param;
-
-begin
-  if hier.cpos.line_p = nil
-    then begin                         {before start of collection}
-      line_p := hier.cpos.coll_p^.first_p;
-      end
-    else begin                         {at an actual line}
-      line_p := hier.cpos.line_p^.next_p;
-      end
-    ;
   end;
 {
 ********************************************************************************

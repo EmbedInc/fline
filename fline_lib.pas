@@ -45,6 +45,8 @@ begin
   fline_p^.mem_p := mem_p;             {save pointer to mem context for this lib use}
   fline_p^.coll_first_p := nil;
   fline_p^.coll_last_p := nil;
+  fline_p^.nullstr.max := size_char(fline_p^.nullstr.str);
+  fline_p^.nullstr.len := 0;
   end;
 {
 ********************************************************************************

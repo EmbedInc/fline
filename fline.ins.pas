@@ -62,7 +62,6 @@ fline_colltyp_virt_k: (                {virtual file, ref only, doesn't contain 
 
   fline_cpos_p_t = ^fline_cpos_t;
   fline_cpos_t = record                {character position within line}
-    coll_p: fline_coll_p_t;            {pointer to collection line is within}
     line_p: fline_line_p_t;            {line containing the character, NIL at end}
     ind: sys_int_machine_t;            {1-N char index, 0 before, len+1 after}
     end;
@@ -86,6 +85,7 @@ fline_colltyp_virt_k: (                {virtual file, ref only, doesn't contain 
     mem_p: util_mem_context_p_t;       {points to context for dynamic memory}
     coll_first_p: fline_flist_ent_p_t; {points to start of collections list}
     coll_last_p: fline_flist_ent_p_t;  {points to end of collections list}
+    nullstr: string_var4_t;            {empty string}
     end;
 {
 *   Functions and subroutines.
@@ -285,11 +285,6 @@ procedure fline_hier_get_line (        {get pointer to current line}
   out     line_p: fline_line_p_t);     {pointer to the line, NIL if before first}
   val_param; extern;
 
-procedure fline_hier_get_linenx (      {get pointer to next line, don't change position}
-  in      hier: fline_hier_t;          {descriptor for the hierarchy level}
-  out     line_p: fline_line_p_t);     {pointer to the next line, NIL if end of all input}
-  val_param; extern;
-
 procedure fline_hier_get_str (         {get pointer to current line string}
   in      hier: fline_hier_t;          {descriptor for the hierarchy level}
   out     str_p: string_var_p_t);      {pointer to line string, NIL if before first}
@@ -308,18 +303,21 @@ procedure fline_hier_getnext_str (     {advance to next input line in hier, retu
   val_param; extern;
 
 function fline_hier_level (            {get hierarchy level}
+  in out  fl: fline_t;                 {FLINE library use state}
   in      hier_p: fline_hier_p_t)      {pointer to hiearchy level inquiring about}
   :sys_int_machine_t;                  {nesting level, 0 at top, -1 for no hierarchy}
   val_param; extern;
 
 function fline_hier_lnum (             {get line number at a hier level}
+  in out  fl: fline_t;                 {FLINE library use state}
   in      hier: fline_hier_t)          {descriptor for the hierarchy level}
   :sys_int_machine_t;                  {1-N line number, 0 before first}
   val_param; extern;
 
 procedure fline_hier_name (            {get name of collection at a hier level}
+  in out  fl: fline_t;                 {FLINE library use state}
   in      hier: fline_hier_t;          {descriptor for the hierarchy level}
-  out     name_p: string_var_p_t);     {returned pointer to collection name}
+  out     name_p: univ string_var_p_t); {returned pointer to collection name}
   val_param; extern;
 
 procedure fline_hier_new (             {low level routine to create new hierchy descriptor}
