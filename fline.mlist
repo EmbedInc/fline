@@ -6,3 +6,4 @@ fline_file.obj
 fline_hier.obj
 fline_lib.obj
 fline_line.obj
+fline_lpos.obj

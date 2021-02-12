@@ -44,6 +44,12 @@ fline_colltyp_virt_k: (                {virtual file, ref only, doesn't contain 
     lnum: sys_int_machine_t;           {1-N number of line within the file}
     end;
 
+  fline_lpos_p_t = ^fline_lpos_t;
+  fline_lpos_t = record                {logical position, not deallocated}
+    prev_p: fline_lpos_p_t;            {to previous position in logical hierarchy}
+    line_p: fline_line_p_t;            {the line at this position level}
+    end;
+
   fline_line_t = record                {one line in a collection}
     prev_p: fline_line_p_t;            {points to previous line in this collection}
     next_p: fline_line_p_t;            {points to next line in this collection}
@@ -51,6 +57,7 @@ fline_colltyp_virt_k: (                {virtual file, ref only, doesn't contain 
     lnum: sys_int_machine_t;           {1-N line number of this line}
     str_p: string_var_p_t;             {pointer to string for this line}
     virt_p: fline_virtlin_p_t;         {points to virtual source line info}
+    lpos_p: fline_lpos_p_t;            {to next level up logical position hierarchy}
     end;
 
   fline_cpos_p_t = ^fline_cpos_t;
@@ -66,6 +73,13 @@ fline_colltyp_virt_k: (                {virtual file, ref only, doesn't contain 
     level: sys_int_machine_t;          {global nesting level, 0 at top}
     blklev: sys_int_machine_t;         {block nesting level, 0 at top}
     cpos: fline_cpos_t;                {character position within this collection}
+    end;
+
+  fline_lposdyn_p_t = ^fline_lposdyn_t;
+  fline_lposdyn_t = record             {logical position, dynamic descriptor}
+    prev_p: fline_lposdyn_p_t;         {to previous position in logical hierarchy}
+    line_p: fline_line_p_t;            {the line at this position level}
+    perm_p: fline_lpos_p_t;            {to static copy, if any}
     end;
 
   fline_t = record                     {state for one use of this library}
@@ -402,6 +416,12 @@ function fline_line_lnum_virt (        {get number of a line within virtual coll
   :sys_int_machine_t;                  {1-N line number, 0 before start}
   val_param; extern;
 
+procedure fline_line_lpos_set (        {set the logical position of a line}
+  in out  fl: fline_t;                 {FLINE library use state}
+  in out  line: fline_line_t;          {the line to set the logical position of}
+  in      lpdyn_p: fline_lposdyn_p_t); {pointer to dynamic logical position}
+  val_param; extern;
+
 procedure fline_line_name (            {get name of collection that line is in}
   in out  line: fline_line_t;          {the line inquiring about}
   out     name_p: string_var_p_t);     {returned pointing to collection name}
@@ -422,4 +442,20 @@ procedure fline_line_virt_last (       {add virtual ref to last line of collecti
   in out  coll: fline_coll_t;          {add virt ref to last line of this coll}
   in out  vcoll: fline_coll_t;         {collection being virtually referenced}
   in      lnum: sys_int_machine_t);    {line number of virtual reference}
+  val_param; extern;
+
+procedure fline_lpos_perm (            {make sure permanent descriptor exists}
+  in out  fl: fline_t;                 {FLINE library use state}
+  in out  lpdyn: fline_lposdyn_t);     {dynamic descriptor to make permanent copy of}
+  val_param; extern;
+
+procedure fline_lpos_pop (             {pop up one dynamic logical position level}
+  in out  fl: fline_t;                 {FLINE library use state}
+  in out  lpdyn_p: fline_lposdyn_p_t); {pnt to level to pop, returned parent, NIL at top}
+  val_param; extern;
+
+procedure fline_lpos_push (            {create new nested layer in dyn logical position}
+  in out  fl: fline_t;                 {FLINE library use state}
+  in out  lpdyn_p: fline_lposdyn_p_t;  {parent pos, may be NIL, returned pointing to new}
+  in      line_p: fline_line_p_t);     {line of the new nested layer}
   val_param; extern;

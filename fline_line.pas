@@ -8,11 +8,12 @@ define fline_line_lnum;
 define fline_line_lnum_virt;
 define fline_line_name;
 define fline_line_name_virt;
+define fline_line_lpos_set;
 %include 'fline2.ins.pas';
 {
 ********************************************************************************
 *
-*   Subroutine FLINE_LINE_ADD_END (FL, COLL, LINE)
+*   Subroutine FLINE_LINE_ADD_END (FL, COLL, STR)
 *
 *   Add the text line LINE to the end of the collection COLL.
 }
@@ -36,6 +37,7 @@ begin
   line_p^.next_p := nil;               {fill in fields in the line descriptor}
   line_p^.coll_p := addr(coll);
   line_p^.virt_p := nil;
+  line_p^.lpos_p := nil;
 
   if coll.last_p = nil                 {link new line to the collection}
     then begin                         {this is first line in collection}
@@ -179,4 +181,25 @@ begin
 
   if line.coll_p = nil then return;    {no real collection indicated ?}
   name_p := line.coll_p^.name_p;       {return pointer to real collection name}
+  end;
+{
+********************************************************************************
+*
+*   Subroutine FLINE_LINE_LPOS_SET (FL, LINE, LPDYN_P)
+*
+*   Set the logical position of the line LINE.  LPDYN_P points to the dynamic
+*   logical position.  A permanent copy of the dynamic position if created, if
+*   not previously existing, and the line is linked to this permanent copy.
+}
+procedure fline_line_lpos_set (        {set the logical position of a line}
+  in out  fl: fline_t;                 {FLINE library use state}
+  in out  line: fline_line_t;          {the line to set the logical position of}
+  in      lpdyn_p: fline_lposdyn_p_t); {pointer to dynamic logical position}
+  val_param;
+
+begin
+  if lpdyn_p = nil then return;        {no position, nothing to do ?}
+
+  fline_lpos_perm (fl, lpdyn_p^);      {make sure permanent position exists}
+  line.lpos_p := lpdyn_p^.perm_p;      {link the text line to the permanant position}
   end;

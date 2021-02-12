@@ -17,6 +17,7 @@ call src_pas %srcdir% %libname%_file
 call src_pas %srcdir% %libname%_hier
 call src_pas %srcdir% %libname%_lib
 call src_pas %srcdir% %libname%_line
+call src_pas %srcdir% %libname%_lpos
 
 call src_lib %srcdir% %libname%
 call src_msg %srcdir% %libname%
