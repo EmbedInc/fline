@@ -417,7 +417,8 @@ function fline_line_lnum_virt (        {get number of a line within virtual coll
 procedure fline_line_lpos_set (        {set the logical position of a line}
   in out  fl: fline_t;                 {FLINE library use state}
   in out  line: fline_line_t;          {the line to set the logical position of}
-  in      lpdyn_p: fline_lposdyn_p_t); {pointer to dynamic logical position}
+  in out  lpdyn_p: fline_lposdyn_p_t;  {to parent logical position}
+  in      lastl_p: fline_line_p_t);    {to line of lowest logical position}
   val_param; extern;
 
 procedure fline_line_name (            {get name of collection that line is in}
@@ -442,9 +443,11 @@ procedure fline_line_virt_last (       {add virtual ref to last line of collecti
   in      lnum: sys_int_machine_t);    {line number of virtual reference}
   val_param; extern;
 
-procedure fline_lpos_perm (            {make sure permanent descriptor exists}
+procedure fline_lpos_get (             {get permanent logical position chain}
   in out  fl: fline_t;                 {FLINE library use state}
-  in out  lpdyn: fline_lposdyn_t);     {dynamic descriptor to make permanent copy of}
+  in out  lpdyn_p: fline_lposdyn_p_t;  {to dynamic descriptor for parent position}
+  in      line_p: fline_line_p_t;      {lowest level curr pos, may be NIL}
+  out     lpos_p: fline_lpos_p_t);     {returned pointer to perm position chain}
   val_param; extern;
 
 procedure fline_lpos_pop (             {pop up one dynamic logical position level}

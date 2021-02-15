@@ -185,21 +185,22 @@ begin
 {
 ********************************************************************************
 *
-*   Subroutine FLINE_LINE_LPOS_SET (FL, LINE, LPDYN_P)
+*   Subroutine FLINE_LINE_LPOS_SET (FL, LINE, LPDYN_P, LASTL_P)
 *
-*   Set the logical position of the line LINE.  LPDYN_P points to the dynamic
-*   logical position.  A permanent copy of the dynamic position if created, if
-*   not previously existing, and the line is linked to this permanent copy.
+*   Set the logical position of the line LINE.  LPDYN_P points to the parent
+*   dynamic logical position.  LASTL_P points to the lowest level line under
+*   that parent position.  Both LPDYN_P and LASTL_P are allowed to be NIL.
+*
+*   A permanent copy of the dynamic position if created, if not previously
+*   existing, and the line is linked to this permanent copy.
 }
 procedure fline_line_lpos_set (        {set the logical position of a line}
   in out  fl: fline_t;                 {FLINE library use state}
   in out  line: fline_line_t;          {the line to set the logical position of}
-  in      lpdyn_p: fline_lposdyn_p_t); {pointer to dynamic logical position}
+  in out  lpdyn_p: fline_lposdyn_p_t;  {to parent logical position}
+  in      lastl_p: fline_line_p_t);    {to line of lowest logical position}
   val_param;
 
 begin
-  if lpdyn_p = nil then return;        {no position, nothing to do ?}
-
-  fline_lpos_perm (fl, lpdyn_p^);      {make sure permanent position exists}
-  line.lpos_p := lpdyn_p^.perm_p;      {link the text line to the permanant position}
+  fline_lpos_get (fl, lpdyn_p, lastl_p, line.lpos_p);
   end;

@@ -4,7 +4,7 @@
 module fline_lpos;
 define fline_lpos_push;
 define fline_lpos_pop;
-define fline_lpos_perm;
+define fline_lpos_get;
 %include 'fline2.ins.pas';
 {
 ********************************************************************************
@@ -70,7 +70,7 @@ begin
 *   Local subroutine FLINE_LPOS_PERM (FL, LPDYN)
 *
 *   Make sure that a permanent descriptor exists for the dynamic logical
-*   position LPDYN and all its parent levels.  Permanent descriptor are
+*   position LPDYN and all its parent levels.  Permanent descriptors are
 *   allocated, if not already existing.  When this routine returns, LPDYN.PERM_P
 *   is guaranteed to be pointing to a chain of permanent descriptors.
 }
@@ -98,4 +98,48 @@ begin
       end
     ;
   lpdyn.perm_p^.line_p := lpdyn.line_p; {point perm desc to its text line}
+  end;
+{
+********************************************************************************
+*
+*   Local subroutine FLINE_LPOS_GET (FL, LPDYN_P, LINE_P, LPOS_P)
+*
+*   Get a pointer to the chain of permanent position descriptors for the
+*   position indicated by the dynamic parent logical position pointed to by
+*   LPDYN_P, and the current position of the line at LINE_P.  Both LPDYN_P and
+*   LINE_P are allowed to be NIL.
+*
+*   LPOS_P is returned pointing to the resulting chain of permanent position
+*   descriptors.
+}
+procedure fline_lpos_get (             {get permanent logical position chain}
+  in out  fl: fline_t;                 {FLINE library use state}
+  in out  lpdyn_p: fline_lposdyn_p_t;  {to dynamic descriptor for parent position}
+  in      line_p: fline_line_p_t;      {lowest level curr pos, may be NIL}
+  out     lpos_p: fline_lpos_p_t);     {returned pointer to perm position chain}
+  val_param;
+
+var
+  parent_p: fline_lpos_p_t;            {pointer to permanent parent position chain}
+
+begin
+  if lpdyn_p = nil
+    then begin                         {there is no parent position}
+      parent_p := nil;
+      end
+    else begin
+      fline_lpos_perm (fl, lpdyn_p^);  {make sure chain of permanent descriptors exists}
+      parent_p := lpdyn_p^.perm_p;
+      end
+    ;
+
+  if line_p = nil then begin           {no additional lowest level line ?}
+    lpos_p := parent_p;                {return just the fixed chain}
+    return;
+    end;
+
+  util_mem_grab (                      {allocate lowest level perm position}
+    sizeof(lpos_p^), fl.mem_p^, false, lpos_p);
+  lpos_p^.prev_p := parent_p;          {point to parent level}
+  lpos_p^.line_p := line_p;            {point to line for this lowest level}
   end;
