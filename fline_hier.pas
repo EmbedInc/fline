@@ -80,7 +80,7 @@ procedure fline_hier_new_coll (        {create new hierarchy level}
 
 begin
   fline_hier_new (fl, parent_p, hier_p); {create new hier descriptor}
-  fline_cpos_coll (hier_p^.cpos, coll); {init char pos to before start of collection}
+  fline_cpos_coll_bef (hier_p^.cpos, coll); {init char pos to before start of collection}
   end;
 {
 ********************************************************************************

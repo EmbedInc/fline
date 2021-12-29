@@ -28,19 +28,35 @@ begin
 {
 ********************************************************************************
 *
-*   Subroutine FLINE_CPOS_COLL (CPOS, COLL)
+*   Subroutine FLINE_CPOS_COLL_BEF (CPOS, COLL)
 *
 *   Set the character position CPOS to before the start of the collection of
 *   lines COLL.
 }
-procedure fline_cpos_coll (            {set char position to before collection}
+procedure fline_cpos_coll_bef (        {set char position to before collection}
   out     cpos: fline_cpos_t;          {updated character position}
   in var  coll: fline_coll_t);         {the collection of lines}
   val_param;
 
 begin
-  cpos.line_p := coll.first_p;         {init to before start of first line}
-  cpos.ind := 0;
+  cpos.line_p := coll.first_p;         {first line in collection}
+  cpos.ind := 0;                       {to before start of the line}
+  end;
+{
+********************************************************************************
+*
+*   Subroutine FLINE_CPOS_COLL_START (CPOS, COLL)
+*
+*   Set the character position COLL to the start of the collection COLL.
+}
+procedure fline_cpos_coll_start (      {set char position to start of collection}
+  out     cpos: fline_cpos_t;          {updated character position}
+  in var  coll: fline_coll_t);         {the collection of lines}
+  val_param;
+
+begin
+  cpos.line_p := coll.first_p;         {first line in collection}
+  cpos.ind := 1;                       {to first char of the line}
   end;
 {
 ********************************************************************************

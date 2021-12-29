@@ -197,7 +197,12 @@ procedure fline_coll_new_virt (        {create new empty collection, type VIRT}
   out     coll_p: fline_coll_p_t);     {returned pointer to the new collection}
   val_param; extern;
 
-procedure fline_cpos_coll (            {set char position to before collection}
+procedure fline_cpos_coll_bef (        {set char position to before collection}
+  out     cpos: fline_cpos_t;          {updated character position}
+  in var  coll: fline_coll_t);         {the collection of lines}
+  val_param; extern;
+
+procedure fline_cpos_coll_start (      {set char position to start of collection}
   out     cpos: fline_cpos_t;          {updated character position}
   in var  coll: fline_coll_t);         {the collection of lines}
   val_param; extern;
