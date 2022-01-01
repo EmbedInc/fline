@@ -1,6 +1,7 @@
 module fline_cpos;
 define fline_cpos_init;
-define fline_cpos_coll;
+define fline_cpos_coll_bef;
+define fline_cpos_coll_start;
 define fline_cpos_set_line_bef;
 define fline_cpos_set_line_at;
 define fline_cpos_set_line_aft;
