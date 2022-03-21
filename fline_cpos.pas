@@ -9,6 +9,7 @@ define fline_cpos_eol;
 define fline_cpos_nextline;
 define fline_cpos_getnext_line;
 define fline_cpos_getnext_str;
+define fline_cpos_show;
 %include 'fline2.ins.pas';
 {
 ********************************************************************************
@@ -203,4 +204,89 @@ begin
 
   if cpos.line_p = nil then return;    {there is no current line ?}
   str_p := cpos.line_p^.str_p;         {return pointer to the text string}
+  end;
+{
+********************************************************************************
+*
+*   Subroutine FLINE_CPOS_SHOW (CPOS)
+*
+*   Show the indicated line and position within the line on standard output.
+}
+procedure fline_cpos_show (            {show line and pos within line to STDOUT}
+  in      cpos: fline_cpos_t);         {position to show}
+  val_param;
+
+var
+  name_p: string_var_p_t;              {pointer to collection name}
+  lnum: sys_int_machine_t;             {line number, 0 = before start of collection}
+  shline: boolean;                     {show the source line contents}
+  shpnt: boolean;                      {show pointer to the specific character}
+  lpos_p: fline_lpos_p_t;              {to current position in logical hierarchy}
+
+begin
+  if cpos.line_p = nil then begin      {at end of unknown collection ?}
+    writeln ('-- End of data --');
+    return;
+    end;
+{
+*   Show the source line info, followed by the source line contents if
+*   appropriate.
+}
+  shpnt := true;                       {init to show pointer to char position}
+  if cpos.ind <= 0
+    then begin                         {before start of line}
+      write ('Before start of line ', cpos.line_p^.lnum);
+      shpnt := false;                  {don't try to point to the source char}
+      end
+    else begin                         {in or after line}
+      if cpos.ind > cpos.line_p^.str_p^.len
+        then begin                     {after end of line}
+          write ('After end of line ', cpos.line_p^.lnum);
+          end
+        else begin                     {in body of the line}
+          write ('Line ', cpos.line_p^.lnum, ' column ', cpos.ind);
+          end
+        ;
+      end
+    ;
+  shline := cpos.line_p^.str_p^.len > 0; {show line if it has any characters}
+  shpnt := shpnt and shline;           {only show pointer if showing line}
+
+  fline_line_name_virt (cpos.line_p^, name_p); {get name of collection to show}
+  write (' in "', name_p^.str:name_p^.len, '"');
+  if shline
+    then begin                         {show the source line contents}
+      writeln (':');
+      writeln (cpos.line_p^.str_p^.str:cpos.line_p^.str_p^.len);
+      end
+    else begin                         {don't show the source line contents}
+      writeln ('.');
+      end
+    ;
+{
+*   Show up-arrow pointing to the specific character, if appropriate.
+}
+  if shpnt then begin                  {show pointer to specific char in source line ?}
+    if cpos.ind <= 1
+      then begin                       {no leading spaces}
+        writeln ('^');
+        end
+      else begin                       {one or more spaces before pointer}
+        writeln (' ':(cpos.ind-1), '^');
+        end
+      ;
+    end;
+{
+*   Show position within logical hierarchy, if hierarchy exits.
+}
+  lpos_p := cpos.line_p^.lpos_p;       {init pointer to next level up}
+  if lpos_p <> nil then begin          {will show at least one parent level ?}
+    writeln;                           {leave blank line before parent levels}
+    end;
+  while lpos_p <> nil do begin         {up the logical hierarchy levels}
+    lnum := fline_line_lnum_virt (lpos_p^.line_p^); {get line number to show}
+    fline_line_name_virt (lpos_p^.line_p^, name_p); {get name this line is within}
+    writeln ('From line ', lnum, ' of "', name_p^.str:name_p^.len, '"');
+    lpos_p := lpos_p^.prev_p;          {to next higher level in hierarchy}
+    end;
   end;

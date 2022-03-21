@@ -231,6 +231,10 @@ procedure fline_cpos_set_line_bef (    {set character position to before line}
   in var  line: fline_line_t);         {line to set position to}
   val_param; extern;
 
+procedure fline_cpos_show (            {show line and pos within line to STDOUT}
+  in      cpos: fline_cpos_t);         {position to show}
+  val_param; extern;
+
 procedure fline_cpos_getnext_line (    {advance to next input line in coll, return line}
   in out  cpos: fline_cpos_t;          {character position, updated}
   out     line_p: fline_line_p_t);     {pointer to line, NIL if hit end of collection}
