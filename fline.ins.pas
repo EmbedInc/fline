@@ -207,6 +207,11 @@ procedure fline_cpos_coll_start (      {set char position to start of collection
   in var  coll: fline_coll_t);         {the collection of lines}
   val_param; extern;
 
+function fline_cpos_eof (              {determine whether at end of collection}
+  in      cpos: fline_cpos_t)          {character position}
+  :boolean;                            {after last line of collection}
+  val_param; extern;
+
 function fline_cpos_eol (              {determine whether at end of line}
   in      cpos: fline_cpos_t)          {character position}
   :boolean;                            {at end of line, includes before start of coll}

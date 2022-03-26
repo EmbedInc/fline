@@ -9,6 +9,7 @@ define fline_cpos_eol;
 define fline_cpos_nextline;
 define fline_cpos_getnext_line;
 define fline_cpos_getnext_str;
+define fline_cpos_eof;
 define fline_cpos_show;
 %include 'fline2.ins.pas';
 {
@@ -129,6 +130,23 @@ begin
   if cpos.ind > cpos.line_p^.str_p^.len then return; {past end of the current line ?}
 
   fline_cpos_eol := false;             {not at end of line}
+  end;
+{
+********************************************************************************
+*
+*   Function FLINE_CPOS_EOF (CPOS)
+*
+*   Find whether the character position CPOS is after the last line in the
+*   collection.
+}
+function fline_cpos_eof (              {determine whether at end of collection}
+  in      cpos: fline_cpos_t)          {character position}
+  :boolean;                            {after last line of collection}
+  val_param;
+
+begin
+  fline_cpos_eof :=
+    (cpos.line_p = nil) and (cpos.ind >= 1);
   end;
 {
 ********************************************************************************
