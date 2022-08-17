@@ -474,3 +474,8 @@ procedure fline_lpos_push (            {create new nested layer in dyn logical p
   in out  lpdyn_p: fline_lposdyn_p_t;  {parent pos, may be NIL, returned pointing to new}
   in      line_p: fline_line_p_t);     {line of the new nested layer}
   val_param; extern;
+
+procedure fline_stat_lnum_fnam (       {add line number and file name parms to STAT}
+  in out  stat: sys_err_t;             {status to add line number and file name to}
+  in      cpos: fline_cpos_t);         {position within collection of lines}
+  val_param; extern;
