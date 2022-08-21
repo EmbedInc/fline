@@ -298,9 +298,11 @@ begin
 *   Show position within logical hierarchy, if hierarchy exits.
 }
   lpos_p := cpos.line_p^.lpos_p;       {init pointer to next level up}
+(*
   if lpos_p <> nil then begin          {will show at least one parent level ?}
     writeln;                           {leave blank line before parent levels}
     end;
+*)
   while lpos_p <> nil do begin         {up the logical hierarchy levels}
     lnum := fline_line_lnum_virt (lpos_p^.line_p^); {get line number to show}
     fline_line_name_virt (lpos_p^.line_p^, name_p); {get name this line is within}
