@@ -1,12 +1,12 @@
 {   Routines to set or modify the standard completion status.
 }
 module fline_stat;
-define fline_stat_add_cpos;
+define fline_stat_lnum_fnam;
 %include 'fline2.ins.pas';
 {
 ********************************************************************************
 *
-*   Subroutine FLINE_STAT_ADD_CPOS (STAT, CPOS)
+*   Subroutine FLINE_STAT_LNUM_FNAM (STAT, CPOS)
 *
 *   Add the information about the position into a collection of lines to STAT.
 *   Specifically, two parameters are added to STAT:
